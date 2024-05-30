@@ -49,7 +49,7 @@ done
 ```
 To run the training script, run the below command
 ```Linux
-bash compute_canada/submit/submit_pretrain_finetune.sh
+bash computecanada/submit/submit_loop.sh
 ```
 
 ## The below section highlights the changes done to original mmsegmentation to get it working for ai4arctic with multi-task
