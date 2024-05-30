@@ -1,8 +1,60 @@
 # AI4arctic readme
+ 
+This repository builds on top of [mmsegmentation](https://github.com/open-mmlab/mmsegmentation), a segmentation toolbox based on PyTorch. The mmsegmentation toolbox is particularly useful for quickly trying out different segmentation methods, as it includes implementations of many known architectures. However, the original repository is designed for general computer vision tasks and is not tailored for remote sensing or other specific types of data.
 
-## Changes done to original mmsegmentation to get it working for ai4arctic
+This repository extends mmsegmentation to support the use of remote sensing data for segmentation tasks. Additionally, for Arctic research, the repository includes a multi-task feature where the model has to predict three segmentation maps instead of one. This involves creating a multi-task model with three separate decoders, each dedicated to a specific segmentation task.
 
-## Template Configuration file:
+## Getting Started:
+
+### Installation
+Install the required packages and dependencies by running
+```linux
+bash compute_canada/submit/create_env.sh <env_name>
+```
+This will create a virtualenv at the location \~/<env_name>. (\~ stands for root/home folder)
+
+### Creating config file
+
+OpenMMLAB uses config file based experiments. This is very useful in Deep learning experiments where there are 100's of parameters and only few change at a time. Check out [this documentation](https://mmengine.readthedocs.io/en/latest/advanced_tutorials/config.html) for more information.
+
+An example config file for ViT architecrure(obtained from MAE pretraining) with UPerNet architecture is given at [configs/multi_task_ai4arctic/mae_ai4arctic_ds5_pt_80_ft_20.py](configs/multi_task_ai4arctic/mae_ai4arctic_ds5_pt_80_ft_20.py)
+
+### Submitting a job
+
+To enable submitting multiple jobs easier on slurm (especially when the user wants to test different configurations), a shell script is created where the user only has to put the path of the config files in a list and they all are submitted.
+
+```Shell
+#!/bin/bash 
+set -e
+mmselfsup_config=( 
+configs/selfsup/mask_ratio/mae_ai4arctic_ds5_pt_80_ft_20_mr50.py
+configs/selfsup/mask_ratio/mae_ai4arctic_ds5_pt_80_ft_20_mr90.py
+configs/selfsup/mask_ratio/mae_ai4arctic_ds5_pt_80_ft_20_mr25.py
+)
+
+mmseg_config=(
+configs/mask_ratio/mae_ai4arctic_ds5_pt_80_ft_20_mr50.py
+configs/mask_ratio/mae_ai4arctic_ds5_pt_80_ft_20_mr90.py
+configs/mask_ratio/mae_ai4arctic_ds5_pt_80_ft_20_mr25.py
+)
+
+for i in "${!mmseg_config[@]}"; do
+   # bash test_echo.sh ${array[i]} ${array2[i]}
+   sbatch pretrain_finetune.sh ${mmselfsup_config[i]} ${mmseg_config[i]}
+   # bash test2.sh ${array[i]}
+   # echo  ${array[i]} $wandb_project
+   echo "task successfully submitted" 
+   sleep 5
+done
+```
+To run the training script, run the below command
+```Linux
+bash compute_canada/submit/submit_pretrain_finetune.sh
+```
+
+## The below section highlights the changes done to original mmsegmentation to get it working for ai4arctic with multi-task
+
+### Template Configuration file:
 [configs/multi_task_ai4arctic/mae_ai4arctic_ds5_pt_80_ft_20.py](configs/multi_task_ai4arctic/mae_ai4arctic_ds5_pt_80_ft_20.py)
 
 ### Dataset:
