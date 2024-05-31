@@ -22,6 +22,7 @@ from dateutil import relativedelta
 from convert_raw_icechart import convert_polygon_icechart
 from parallel_stuff import Parallel
 from scipy.interpolate import RegularGridInterpolator
+import wandb
 
 
 def Arguments():
@@ -34,7 +35,7 @@ def Arguments():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--root', default='../../../../ai4arctic/dataset/ai4arctic_raw_train_v3', type=str, help='')
-    parser.add_argument('--output', default='~/scratch/ai4arctic/dataset/train', type=str, help='')
+    parser.add_argument('--output', default='/home/' + os.getenv('LOGNAME') + '/scratch/ai4arctic/dataset/train', type=str, help='')
 
     parser.add_argument('--downsampling', default=1, type=int, help='Downsampling of the scene')
     parser.add_argument('--patch_size', default=224, type=int, help='size of patch')
@@ -58,7 +59,7 @@ class Slide_patches_index(data.Dataset):
         w_grids (int): Number of horizontal grids (patch positions).
         patches_list (list): List of valid patches defined by their coordinates.
     '''
-    def __init__(self, h_img, w_img, patch_size, downscaling, overlap_percent, nan_mask):
+    def __init__(self, h_img, w_img, patch_size, downsampling, overlap_percent, nan_mask):
         '''
         Initializes the Slide_patches_index with the given image dimensions, patch size, 
         overlap percentage.
@@ -73,7 +74,7 @@ class Slide_patches_index(data.Dataset):
         super(Slide_patches_index, self).__init__()
 
         # calculate the new image size based on down scaling
-        h_img_d, w_img_d = int(np.round(h_img/downscaling)), int(np.round(w_img/downscaling))
+        h_img_d, w_img_d = int(np.round(h_img/downsampling)), int(np.round(w_img/downsampling))
 
         # calculate the actual down scaling factor due to rounding
         d_h_img, d_w_img = h_img/h_img_d, w_img/w_img_d
@@ -144,7 +145,6 @@ class Slide_patches_index(data.Dataset):
     def __len__(self):
         return len(self.patches_list)
 
-
 def get_time_of_year(file_name):
     """
     Extracts the data as a month and days of the year from the file name.
@@ -174,6 +174,7 @@ def get_time_of_year(file_name):
     days = (date2-date1).days
     return months, days
 
+
 def get_patch_index(args, scene_file):
    
     scene = xr.open_dataset(scene_file, engine='h5netcdf')
@@ -191,12 +192,16 @@ def Extract_patches(args, item):
     """
     
     scene_file, patch_idx = item
+    if not len(patch_idx):
+        print("Number of patches = 0 for scene %s"%(os.path.split(scene_file)[1]))
+        return
+    
     down_scale = args.downsampling
     scene = xr.open_dataset(scene_file, engine='h5netcdf')
-    output_folder = os.path.join(args.output, os.path.split(scene_file)[1][:-3]+'_down_scale_'+str(down_scale)+'X')
+    output_folder = os.path.join(args.output, 'down_scale_'+str(down_scale)+'X', os.path.split(scene_file)[1][:-3])
+    ic(output_folder)
     if os.path.exists(output_folder): shutil.rmtree(output_folder)
     os.makedirs(output_folder, exist_ok=True)
-    ic(output_folder)
     data = {}
 
     #  ---------------- Get the SIC, SOD, FLOE Charts ------------------------- #
@@ -254,7 +259,7 @@ def Extract_patches(args, item):
     for var in grid_variables:
         values = scene[var].values
         reshaped_values = np.reshape(values, (len(y_l), len(x_l)))
-        interpolator = RegularGridInterpolator((y_l, x_l), reshaped_values, method='cubic')
+        interpolator = RegularGridInterpolator((y_l, x_l), reshaped_values, method='linear')
         interpolated_values = interpolator(points)
         data[var] = interpolated_values.reshape(X.shape)
 
@@ -305,9 +310,10 @@ def Extract_patches(args, item):
         data_patch['day'] = days
         joblib.dump(data_patch, output_folder + "/{:05d}.pkl".format(i))
 
-
 if __name__ == '__main__':   
     args = Arguments()
+
+    # wandb.init(project='extract_patches')
 
     import time
     start_time = time.time()
