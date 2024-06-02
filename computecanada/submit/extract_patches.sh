@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --nodes 1
 #SBATCH --cpus-per-task=48 # change this parameter to 2,4,6,... and increase "--num_workers" accordingly to see the effect on performance
-#SBATCH --mem=120G
-#SBATCH --time=2:59:00
+#SBATCH --mem=510000M
+#SBATCH --time=1:59:00
 #SBATCH --output=../output/%j.out
 #SBATCH --account=def-dclausi
 #SBATCH --mail-user=jnoat92@gmail.com

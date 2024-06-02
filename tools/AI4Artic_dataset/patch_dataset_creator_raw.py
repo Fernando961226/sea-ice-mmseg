@@ -2,7 +2,7 @@
 File use to create the patches for the raw data from AI4Artic
 """
 
-
+import time
 import argparse
 import glob
 import os
@@ -38,11 +38,10 @@ def Arguments():
     parser.add_argument('--output', default='/home/' + os.getenv('LOGNAME') + '/scratch/ai4arctic/dataset/train', type=str, help='')
 
     parser.add_argument('--downsampling', default=1, type=int, help='Downsampling of the scene')
-    parser.add_argument('--patch_size', default=224, type=int, help='size of patch')
+    parser.add_argument('--patch_size', default=256, type=int, help='size of patch')
     parser.add_argument('--overlap', default=0.0, type=float, help='Amount of overlap. Max 1, Min 0')
     args = parser.parse_args()
     return args
-
 
 class Slide_patches_index(data.Dataset):
     '''
@@ -176,7 +175,14 @@ def get_time_of_year(file_name):
 
 
 def get_patch_index(args, scene_file):
-   
+    """
+    Calculates the patches indexes
+    
+    Args:
+        args (argparse.Namespace): Command-line arguments.
+        scene_file (str): String containing the scene file path.
+    """
+    
     scene = xr.open_dataset(scene_file, engine='h5netcdf')
     row, col = scene['nersc_sar_primary'].shape
     nan_mask = np.isnan(scene['nersc_sar_primary'])
@@ -207,7 +213,7 @@ def Extract_patches(args, item):
     #  ---------------- Get the SIC, SOD, FLOE Charts ------------------------- #
     scene = convert_polygon_icechart(scene)
 
-    # ----------------- Remove Nan's from SAR and Create Nan Mask -------------------------------- #
+    # ----------------- CREATE NAN MASK FROM SAR -------------------------------- #
 
     data['nersc_sar_primary'] = scene['nersc_sar_primary'].values
     data['nersc_sar_secondary'] = scene['nersc_sar_secondary'].values
@@ -232,14 +238,15 @@ def Extract_patches(args, item):
     else:
         data['nersc_sar_primary'] = scene['nersc_sar_primary'].values
 
-    # ----------- DOWN SCALE SAR NAN Mask ------------- #
+    # ----------- DOWN SCALE SAR NAN MASK ------------- #
 
     data['sar_nan_mask'] = torch.nn.functional.interpolate(input=torch.from_numpy(np.float32(data['sar_nan_mask'])).view((1, 1, rows, cols)), 
                                                            size=(rows_down, cols_down), mode='nearest').numpy().squeeze()
     
     data['sar_nan_mask'] = np.array(data['sar_nan_mask'], dtype=bool)
 
-    # ---------------------- Interpolate Grid variables to match SAR ---------------------- #
+    # ----------- INTERPOLATE GRID VARIABLES TO MATCH SAR ------------ #
+
     grid_variables = ['sar_grid_latitude', 'sar_grid_longitude', 'sar_grid_incidenceangle']
 
     # Extract and reshape the initial x and y coordinates
@@ -283,9 +290,8 @@ def Extract_patches(args, item):
         data[var] = torch.nn.functional.interpolate(input=torch.from_numpy(scene[var].values).view((1, 1, r, c)), 
                                                     size=(rows_down, cols_down), mode='nearest').numpy().squeeze()
 
-    # joblib.dump(data, 'out.pkl')
-    # -----------  PATCH EXTRACTION -------------- #
 
+    # ----------- PATCH EXTRACTION -------------- #
     data_patch = {}
     for i in range(len(patch_idx)):
         
@@ -311,41 +317,32 @@ def Extract_patches(args, item):
         joblib.dump(data_patch, output_folder + "/{:05d}.pkl".format(i))
 
 if __name__ == '__main__':   
-    args = Arguments()
 
     # wandb.init(project='extract_patches')
-
-    import time
-    start_time = time.time()
+    args = Arguments()
 
     # Grab all .nc files from root as a string list
-    scene_files = glob.glob(args.root + '/*.nc')[:1]
-
-    # patches_idx = []
-    # for f in tqdm(scene_files, ncols=50):
-    #     scene = xr.open_dataset(f, engine='h5netcdf')
-    #     row, col = scene['nersc_sar_primary'].shape
-    #     nan_mask = np.isnan(scene['nersc_sar_primary'])
-    #     patches_idx.append(Slide_patches_index(row, col, args.patch_size, args.downsampling, args.overlap, nan_mask))
+    scene_files = glob.glob(args.root + '/*.nc')
     
     #  ---------------- GET INDEXES
+    start_time = time.time()
     print('Calculating patches ...')
     iterable = iter(scene_files)
     if len(scene_files) > 1:
         patches_idx = Parallel(get_patch_index, iterable, args)
     else:
         patches_idx = [get_patch_index(args, next(iterable))]
-    print('Patches index generated!')
+    print('Patches index generated! - time:%.2f'%(time.time()-start_time))
     
     #  ---------------- EXTRACT PATCHES
+    start_time = time.time()
     print('Saving patches ...')
     iterable = zip(scene_files, patches_idx)
     if len(scene_files) > 1:
-        Parallel(Extract_patches, iterable, args)
+        # Using more than 16 cores makes the memory consumption to explode
+        Parallel(Extract_patches, iterable, args, n_cores=16)
     else:
         Extract_patches(args, next(iterable))
-    print('Patches saved!')
-
-    ic(time.time()-start_time)
+    print('Patches saved! - time:%.2f'%(time.time()-start_time))
     
 
