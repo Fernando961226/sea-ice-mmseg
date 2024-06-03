@@ -40,6 +40,8 @@ def Arguments():
     parser.add_argument('--downsampling', default=1, type=int, help='Downsampling of the scene')
     parser.add_argument('--patch_size', default=256, type=int, help='size of patch')
     parser.add_argument('--overlap', default=0.0, type=float, help='Amount of overlap. Max 1, Min 0')
+
+    parser.add_argument('--n_cores', default=16, type=int, help='Number of CPU cores to use in parallel process')
     args = parser.parse_args()
     return args
 
@@ -340,7 +342,7 @@ if __name__ == '__main__':
     iterable = zip(scene_files, patches_idx)
     if len(scene_files) > 1:
         # Using more than 16 cores makes the memory consumption to explode
-        Parallel(Extract_patches, iterable, args, n_cores=16)
+        Parallel(Extract_patches, iterable, args, n_cores=args.n_cores)
     else:
         Extract_patches(args, next(iterable))
     print('Patches saved! - time:%.2f'%(time.time()-start_time))
