@@ -22,8 +22,8 @@ pip install icecream
 pip install wandb
 pip install matplotlib
 pip install numpy
-pip install torchvision
 pip install torch
+pip install torchvision
 pip install xarray
 pip install h5netcdf
 # pip install mim
@@ -33,7 +33,7 @@ pip install regex
 pip install mmengine>=0.8.3
 pip install mmcv
 pip install -v -e .
-pip install icecream
+pip install joblib
 
 # mmwhale_dir=$(pwd)
 
