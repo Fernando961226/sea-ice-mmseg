@@ -34,10 +34,10 @@ def Arguments():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--root', default='../../../../ai4arctic/dataset/ai4arctic_raw_train_v3', type=str, help='')
-    parser.add_argument('--output', default='/home/' + os.getenv('LOGNAME') + '/scratch/ai4arctic/dataset/train', type=str, help='')
+    parser.add_argument('--root', default='/home/' + os.getenv('LOGNAME') + '/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3', type=str, help='')
+    parser.add_argument('--output', default='/home/' + os.getenv('LOGNAME') + '/scratch/dataset/ai4arctic/', type=str, help='')
 
-    parser.add_argument('--downsampling', default=1, type=int, help='Downsampling of the scene')
+    parser.add_argument('--downsampling', default=3, type=int, help='Downsampling of the scene')
     parser.add_argument('--patch_size', default=256, type=int, help='size of patch')
     parser.add_argument('--overlap', default=0.0, type=float, help='Amount of overlap. Max 1, Min 0')
 
@@ -75,7 +75,11 @@ class Slide_patches_index(data.Dataset):
         super(Slide_patches_index, self).__init__()
 
         # calculate the new image size based on down scaling
-        h_img_d, w_img_d = int(np.round(h_img/downsampling)), int(np.round(w_img/downsampling))
+        # if we downscale, we first apply a 2x2 block average
+        if downsampling > 1:
+            h_img_d, w_img_d = int(h_img//2//(downsampling/2)), int(w_img//2//(downsampling/2))
+        else:
+            h_img_d, w_img_d = h_img, w_img
 
         # calculate the actual down scaling factor due to rounding
         d_h_img, d_w_img = h_img/h_img_d, w_img/w_img_d
@@ -212,42 +216,40 @@ def Extract_patches(args, item):
     os.makedirs(output_folder, exist_ok=True)
     data = {}
 
-    #  ---------------- Get the SIC, SOD, FLOE Charts ------------------------- #
+    #  ---------- Get the SIC, SOD, FLOE Charts
     scene = convert_polygon_icechart(scene)
 
-    # ----------------- CREATE NAN MASK FROM SAR -------------------------------- #
-
+    # ----------- GET SAR DATA
     data['nersc_sar_primary'] = scene['nersc_sar_primary'].values
     data['nersc_sar_secondary'] = scene['nersc_sar_secondary'].values
-
-    data['sar_nan_mask'] = np.isnan(data['nersc_sar_primary'])
-
-    data['nersc_sar_primary'][data['sar_nan_mask']] = 0
-    data['nersc_sar_secondary'][data['sar_nan_mask']] = 0
-
-
-    # ----------- DOWNN SCALE SAR ------------- #
-
     rows, cols = scene['nersc_sar_primary'].shape
 
-    rows_down, cols_down = int(np.round(rows/down_scale)), int(np.round(cols/down_scale))
+    # ----------- CREATE NAN MASK FROM SAR
+    data['sar_nan_mask'] = np.isnan(data['nersc_sar_primary'])
+    # data['nersc_sar_primary'][data['sar_nan_mask']] = 0
+    # data['nersc_sar_secondary'][data['sar_nan_mask']] = 0
 
-    down_rows, down_cols = rows/rows_down, cols/cols_down
+    # ----------- DOWNN SCALE SAR
+    rows_down, cols_down = rows, cols
 
-    if down_scale != 1:
-        data['nersc_sar_primary'] = torch.nn.functional.interpolate(input=torch.from_numpy(scene['nersc_sar_primary'].values).view((1, 1, rows, cols)), 
+    if down_scale > 1:
+        # Block average 2x2 before downsampling SAR channels
+        data['nersc_sar_primary'] = torch.nn.functional.avg_pool2d(torch.from_numpy(scene['nersc_sar_primary'].values).unsqueeze(0).unsqueeze(0), 
+                                                                   kernel_size = 2, stride = 2).squeeze().numpy()
+        data['nersc_sar_secondary'] = torch.nn.functional.avg_pool2d(torch.from_numpy(scene['nersc_sar_secondary'].values).unsqueeze(0).unsqueeze(0),
+                                                                   kernel_size = 2, stride = 2).squeeze().numpy()
+
+        rows_down, cols_down = int(rows//2//(down_scale/2)), int(cols//2//(down_scale/2))
+        down_rows, down_cols = rows/rows_down, cols/cols_down
+        data['nersc_sar_primary'] = torch.nn.functional.interpolate(input=torch.from_numpy(scene['nersc_sar_primary'].values).unsqueeze(0).unsqueeze(0),
                                                                     size=(rows_down, cols_down), mode='bilinear').numpy().squeeze()
-    else:
-        data['nersc_sar_primary'] = scene['nersc_sar_primary'].values
+        data['nersc_sar_secondary'] = torch.nn.functional.interpolate(input=torch.from_numpy(scene['nersc_sar_secondary'].values).unsqueeze(0).unsqueeze(0),
+                                                                    size=(rows_down, cols_down), mode='bilinear').numpy().squeeze()
+        # Down scale SAR nan mask
+        data['sar_nan_mask'] = torch.nn.functional.interpolate(input=torch.from_numpy(np.float32(data['sar_nan_mask'])).unsqueeze(0).unsqueeze(0),
+                                                            size=(rows_down, cols_down), mode='nearest').numpy().squeeze().astype(bool)
 
-    # ----------- DOWN SCALE SAR NAN MASK ------------- #
-
-    data['sar_nan_mask'] = torch.nn.functional.interpolate(input=torch.from_numpy(np.float32(data['sar_nan_mask'])).view((1, 1, rows, cols)), 
-                                                           size=(rows_down, cols_down), mode='nearest').numpy().squeeze()
-    
-    data['sar_nan_mask'] = np.array(data['sar_nan_mask'], dtype=bool)
-
-    # ----------- INTERPOLATE GRID VARIABLES TO MATCH SAR ------------ #
+    # ----------- INTERPOLATE GRID VARIABLES TO MATCH SAR
 
     grid_variables = ['sar_grid_latitude', 'sar_grid_longitude', 'sar_grid_incidenceangle']
 
@@ -272,9 +274,9 @@ def Extract_patches(args, item):
         interpolated_values = interpolator(points)
         data[var] = interpolated_values.reshape(X.shape)
 
-    # ----------- INTERPOLATE VARIABLES TO MATCH SAR SCALE ------------ #
+    # ----------- INTERPOLATE VARIABLES TO MATCH SAR SCALE
 
-    exclude_variables = ['nersc_sar_primary', 'polygon_icechart', 'sar_grid_line', 'sar_grid_sample', 
+    exclude_variables = ['nersc_sar_primary', 'nersc_sar_secondary, ''polygon_icechart', 'sar_grid_line', 'sar_grid_sample', 
                          'sar_grid_latitude', 'sar_grid_longitude', 'sar_grid_incidenceangle', 'sar_grid_height', 
                          'amsr2_swath_map', 'swath_segmentation', 'SIC', 'FLOE', 'SOD']
 
@@ -282,14 +284,12 @@ def Extract_patches(args, item):
     filtered_vars = [var for var in vars if var not in exclude_variables]
 
     for var in filtered_vars:
-        r, c = scene[var].shape
-        data[var] = torch.nn.functional.interpolate(input=torch.from_numpy(scene[var].values).view((1, 1, r, c)), 
+        data[var] = torch.nn.functional.interpolate(input=torch.from_numpy(scene[var].values).unsqueeze(0).unsqueeze(0), 
                                                     size=(rows_down, cols_down), mode='bilinear').numpy().squeeze()
 
     sea_ice_maps = ['SIC', 'FLOE', 'SOD']
     for var in sea_ice_maps:
-        r, c = scene[var].shape
-        data[var] = torch.nn.functional.interpolate(input=torch.from_numpy(scene[var].values).view((1, 1, r, c)), 
+        data[var] = torch.nn.functional.interpolate(input=torch.from_numpy(scene[var].values).unsqueeze(0).unsqueeze(0), 
                                                     size=(rows_down, cols_down), mode='nearest').numpy().squeeze()
 
 
@@ -313,9 +313,9 @@ def Extract_patches(args, item):
         data_patch['indexes'] = [(x1*down_cols, y1*down_cols), (x2*down_cols, y2*down_rows)]
         data_patch['pixel_spacing'] = 40 * down_scale
         data_patch['ice_service'] = data_patch['file_name'][77:80]
-        months, days = get_time_of_year(data_patch['scene_id'])
-        data_patch['month'] = months
-        data_patch['day'] = days
+        month, day = get_time_of_year(data_patch['scene_id'])
+        data_patch['month'] = np.ones((args.patch_size, args.patch_size)) * month
+        data_patch['day'] = np.ones((args.patch_size, args.patch_size)) * day
         joblib.dump(data_patch, output_folder + "/{:05d}.pkl".format(i))
 
 if __name__ == '__main__':   
@@ -335,6 +335,8 @@ if __name__ == '__main__':
     else:
         patches_idx = [get_patch_index(args, next(iterable))]
     print('Patches index generated! - time:%.2f'%(time.time()-start_time))
+
+    print('Number of Patches for downsampling %dX: %d'%(args.downsampling, sum([len(l) for l in patches_idx])))
     
     #  ---------------- EXTRACT PATCHES
     start_time = time.time()

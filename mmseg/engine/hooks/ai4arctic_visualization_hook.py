@@ -130,13 +130,18 @@ class SegAI4ArcticVisualizationHook(Hook):
             scene_name = os.path.basename(img_path)
             scene_name = scene_name[17:32] + '_' + \
                 scene_name[77:80] + '_prep.nc'
-            if self.downsample_factor != 1:
+            
+            if self.downsample_factor is None:
+                downsample_factor = data_sample.dws_factor
+            else:
+                downsample_factor = self.downsample_factor
+            if downsample_factor > 1:
                 img = torch.from_numpy(img)
                 img = img.unsqueeze(0).permute(0, 3, 1, 2)
                 img = torch.nn.functional.interpolate(img,
-                                                      size=(shape[0] // self.downsample_factor,
-                                                            shape[1] // self.downsample_factor),
-                                                      mode='nearest')
+                                                      size=(int(shape[0]//2//(downsample_factor/2)),
+                                                            int(shape[1]//2//(downsample_factor/2))),
+                                                      mode='bilinear')
                 img = img.permute(0, 2, 3, 1).squeeze(0)
                 if self.pad_size is not None:
                     # Calculate the pad amounts
@@ -167,7 +172,7 @@ class SegAI4ArcticVisualizationHook(Hook):
             gt_sem_seg = {}
             for i, task in enumerate(tasks):
                 gt_sem_seg = data_sample.gt_sem_seg.data.cpu().numpy()[
-                    i, :, :].astype(np.float16)
+                    :, :, i].astype(np.float16)
                 gt_sem_seg[gt_sem_seg == 255] = np.nan
 
                 pred_sem_seg = data_sample.get(f'pred_sem_seg_{task}').data.cpu().numpy()[
@@ -221,7 +226,7 @@ class SegAI4ArcticVisualizationHook(Hook):
 
             for i, task in enumerate(tasks):
                 gt_sem_seg = data_sample.gt_sem_seg.data.cpu().numpy()[
-                    i, :, :].astype(np.float16)
+                    :, :, i].astype(np.float16)
                 gt_sem_seg[gt_sem_seg == 255] = np.nan
                 pred_sem_seg = data_sample.get(f'pred_sem_seg_{task}').data.cpu().numpy()[
                     0, :, :].astype(np.float16)
@@ -313,13 +318,18 @@ class SegAI4ArcticVisualizationHook(Hook):
             scene_name = os.path.basename(img_path)
             scene_name = scene_name[17:32] + '_' + \
                 scene_name[77:80] + '_prep.nc'
-            if self.downsample_factor != 1:
+            
+            if self.downsample_factor is None:
+                downsample_factor = data_sample.dws_factor
+            else:
+                downsample_factor = self.downsample_factor
+            if downsample_factor > 1:
                 img = torch.from_numpy(img)
                 img = img.unsqueeze(0).permute(0, 3, 1, 2)
                 img = torch.nn.functional.interpolate(img,
-                                                      size=(shape[0] // self.downsample_factor,
-                                                            shape[1] // self.downsample_factor),
-                                                      mode='nearest')
+                                                      size=(int(shape[0]//2//(downsample_factor/2)),
+                                                            int(shape[1]//2//(downsample_factor/2))),
+                                                      mode='bilinear')
                 img = img.permute(0, 2, 3, 1).squeeze(0)
                 if self.pad_size is not None:
                     # Calculate the pad amounts
