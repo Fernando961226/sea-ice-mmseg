@@ -7,24 +7,42 @@ _base_ = [
     '../_base_/schedules/schedule_160k.py'
 ]
 # copied from vit_vit-b16_mln_upernet_8xb2-160k_ade20k-512x512.py
+import os
 
 crop_size = (256, 256)
-scale_factor = 1.5
-downsample_factor = [1]
+scale = (256, 256)
+downsample_factor_train = [2, 8]   # List all downsampling factors from 2X to 10X to include during training
+downsample_factor_val = 2
+
 GT_type = ['SIC', 'SOD', 'FLOE']
 num_classes = {'SIC': 12, 'SOD': 7, 'FLOE': 8} # add 1 class extra for visualization to work correctly, put [11,6,7] in other places
 metrics = {'SIC': 'r2', 'SOD': 'f1', 'FLOE': 'f1'}
 combined_score_weights = [2, 2, 1]
+
+possible_channels = ['nersc_sar_primary', 'nersc_sar_secondary', 
+                     'sar_grid_incidenceangle', 'sar_grid_latitude', 'sar_grid_longitude',
+                     'distance_map', 'btemp_6_9h', 'btemp_6_9v', 'btemp_7_3h', 'btemp_7_3v', 'btemp_10_7h', 'btemp_10_7v', 'btemp_18_7h',
+                     'btemp_18_7v', 'btemp_23_8h', 'btemp_23_8v', 'btemp_36_5h', 'btemp_36_5v', 'btemp_89_0h', 'btemp_89_0v',
+                     'u10m_rotated', 'v10m_rotated', 't2m', 'skt', 'tcwv', 'tclw', 'month', 'day']
+mean = [-14.508254953309349, -24.701211250236728, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+std  = [5.659745919326586  , 4.746759336539111  , 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+mean = dict(zip(possible_channels, mean))
+std = dict(zip(possible_channels, std))
+
 channels = [
-    # -- Sentinel-1 variables -- #
+    # # -- Sentinel-1 variables -- #
     'nersc_sar_primary',
     'nersc_sar_secondary',
-    # 'sar_incidenceangle',
 
-    # -- Geographical variables -- #
+    # # -- incidence angle -- #
+    # 'sar_grid_incidenceangle',
+
+    # # -- Geographical variables -- #
+    # 'sar_grid_latitude',
+    # 'sar_grid_longitude',
     'distance_map',
 
-    # # -- AMSR2 channels -- #
+    # # # -- AMSR2 channels -- #
     # 'btemp_6_9h', 'btemp_6_9v',
     # 'btemp_7_3h', 'btemp_7_3v',
     # 'btemp_10_7h', 'btemp_10_7v',
@@ -33,33 +51,39 @@ channels = [
     # 'btemp_36_5h', 'btemp_36_5v',
     # 'btemp_89_0h', 'btemp_89_0v',
 
-    # # -- Environmental variables -- #
+    # # # -- Environmental variables -- #
     # 'u10m_rotated', 'v10m_rotated',
     # 't2m', 'skt', 'tcwv', 'tclw',
+
+    # # -- acquisition time
+    # 'month', 'day'
 ]
 
-
 # dataset settings
-dataset_type = 'AI4ArcticPatches'
-data_root_train = '/home/jnoat92/scratch/dataset/ai4arctic/img_dir/train/'
-data_root_test = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3'
+dataset_type_train = 'AI4ArcticPatches'
+dataset_type_val = 'AI4Arctic'
 
-gt_root = '/home/jnoat92/scratch/dataset/ai4arctic/ann_dir/train/'
-test_root = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3_segmaps'
+data_root_nc = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3'
+data_root_patches = '/home/jnoat92/scratch/dataset/ai4arctic/'
+gt_root = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3_segmaps'
 
-finetune_ann_file = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3/test1file.txt'
-test_ann_file = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3/test.txt'
-# test_ann_file = '/home/m32patel/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3/test1file.txt'
+file_train = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
+file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
 
+# data_root_test = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3'
+# test_root = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3_segmaps'
+# finetune_ann_file = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
+# test_ann_file = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3/test.txt'
+
+# ------------- TRAIN SETUP
 train_pipeline = [
-    dict(type='LoadPatchFromPKLFile', data_root=data_root_train, gt_root=gt_root, ann_file=None, channels=
-        channels, mean=[-14.508254953309349, -24.701211250236728, 0],
-        std=[5.659745919326586, 4.746759336539111, 1], to_float32=True, nan=255, downsample_factor=downsample_factor, with_seg=False, GT_type=GT_type),
+    dict(type='LoadPatchFromPKLFile', channels=channels, mean=mean, std=std, 
+         to_float32=True, nan=255, with_seg=True, GT_type=GT_type),
     # dict(type='LoadAnnotations', reduce_zero_label=True),
     dict(
         type='RandomResize',
-        scale_factor=scale_factor,
-        ratio_range=(0.5, 2.0),
+        scale=scale,
+        ratio_range=(1.0, 1.5),
         keep_ratio=True),
     dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.9),
     dict(type='RandomFlip', prob=0.5),
@@ -67,63 +91,48 @@ train_pipeline = [
     dict(type='PackSegInputs')
 ]
 
-#------------------------
-test_pipeline = [
-    dict(type='PreLoadImageandSegFromNetCDFFile', data_root=data_root_test, gt_root=test_root, ann_file=test_ann_file, channels=channels, mean=[-14.508254953309349, -24.701211250236728, 0],
-        std=[5.659745919326586, 4.746759336539111, 1], to_float32=True, nan=255, downsample_factor=downsample_factor, with_seg=False, GT_type=GT_type),
+concat_dataset = dict(type='ConcatDataset', 
+                      datasets= [dict(type=dataset_type_train,
+                                      data_root = os.path.join(data_root_patches, 'down_scale_%dX'%(i)),
+                                      ann_file = file_train,
+                                      pipeline = train_pipeline) for i in downsample_factor_train])
+train_dataloader = dict(batch_size=8,
+                        num_workers=4,
+                        persistent_workers=True,
+                        sampler=dict(type='InfiniteSampler', shuffle=True),
+                        dataset=concat_dataset)
+
+# ------------- VAL SETUP
+val_pipeline = [
+    # dict(type='LoadPatchFromPKLFile', channels=channels, mean=mean, std=std, 
+    #      to_float32=True, nan=255, with_seg=True, GT_type=GT_type),
+    dict(type='PreLoadImageandSegFromNetCDFFile', data_root=data_root_nc, gt_root=gt_root, 
+         ann_file=file_val, channels=channels, mean=mean, std=std, to_float32=True, nan=255, 
+         downsample_factor=-1, with_seg=True, GT_type=GT_type),
     # dict(type='Resize', scale=scale, keep_ratio=True),
     # add loading annotation after ``Resize`` because ground truth
     # does not need to do resize data transform
-    dict(type='LoadGTFromPNGFile', gt_root=test_root,
-         downsample_factor=downsample_factor, GT_type=GT_type),
-    dict(type='PackSegInputs')
+    # dict(type='LoadGTFromPNGFile', gt_root=test_root,
+    #      downsample_factor=downsample_factor, GT_type=GT_type),
+    dict(type='PackSegInputs', meta_keys=('img_path', 'seg_map_path', 'ori_shape',
+                                          'img_shape', 'pad_shape', 'scale_factor', 'flip',
+                                          'flip_direction', 'reduce_zero_label', 'dws_factor')) 
+                                          # 'dws_factor' is the only non-default parameter
 ]
-img_ratios = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75]
-tta_pipeline = [
-    dict(type='PreLoadImageandSegFromNetCDFFile', data_root=data_root_test, gt_root=test_root, ann_file=test_ann_file, channels=channels, mean=[-14.508254953309349, -24.701211250236728, 0],
-         std=[5.659745919326586, 4.746759336539111, 1], to_float32=True, nan=255, downsample_factor=downsample_factor, with_seg=False, GT_type=GT_type),
-    # dict(type='Resize', scale=scale, keep_ratio=True),
-    dict(
-        type='TestTimeAug',
-        transforms=[
-            [
-                dict(type='Resize', scale_factor=r, keep_ratio=True)
-                for r in img_ratios
-            ],
-            [
-                dict(type='RandomFlip', prob=0., direction='horizontal'),
-                dict(type='RandomFlip', prob=1., direction='horizontal')
-            ],
-            [dict(type='LoadGTFromPNGFile', gt_root=gt_root,
-                  downsample_factor=downsample_factor, GT_type=GT_type)],
-            [dict(type='PackSegInputs')]
-        ])
-]
-train_dataloader = dict(
-    batch_size=8,
-    num_workers=4,
-    persistent_workers=True,
-    sampler=dict(type='InfiniteSampler', shuffle=True),
-    dataset=dict(
-        type=dataset_type,
-        data_root=data_root_train,
-        ann_file=None,
-        data_prefix=dict(
-            img_path='', seg_map_path=''),
-        pipeline=train_pipeline))
-val_dataloader = dict(
-    batch_size=1,
-    num_workers=4,
-    persistent_workers=True,
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    dataset=dict(
-        type=dataset_type,
-        data_root=data_root_test,
-        ann_file=test_ann_file,
-        data_prefix=dict(
-            img_path='',
-            seg_map_path=''),
-        pipeline=test_pipeline))
+
+
+val_dataloader = dict(batch_size=1,
+                      num_workers=4,
+                      persistent_workers=True,
+                      sampler=dict(type='DefaultSampler', shuffle=False),
+                      dataset=dict(type=dataset_type_val,
+                                   data_root=data_root_nc,
+                                   ann_file=file_val,
+                                   pipeline=val_pipeline))
+                    #   dataset=dict(type=dataset_type_train,
+                    #                data_root = os.path.join(data_root_patches, 'down_scale_%dX'%(downsample_factor_val)),
+                    #                ann_file = file_val,
+                    #                pipeline = val_pipeline))
 test_dataloader = val_dataloader
 
 
@@ -231,7 +240,7 @@ model = dict(
     # model training and testing settings
     train_cfg=dict(),
     # test_cfg=dict(mode='whole'))  # yapf: disable
-    test_cfg=dict(mode='slide', crop_size=(512, 512), stride=(256, 256)))
+    test_cfg=dict(mode='slide', crop_size=crop_size, stride=(crop_size[0] *90//100, crop_size[1]*90//100)))
 
 
 val_evaluator = dict(type='MultitaskIoUMetric',
@@ -274,7 +283,7 @@ default_hooks = dict(
     checkpoint=dict(type='CheckpointHook', by_epoch=False,
                     interval=10, max_keep_ckpts=3),
     sampler_seed=dict(type='DistSamplerSeedHook'),
-    visualization=dict(type='SegAI4ArcticVisualizationHook', tasks=GT_type, num_classes=num_classes, downsample_factor=downsample_factor, metrics=metrics, combined_score_weights=combined_score_weights, draw=True))
+    visualization=dict(type='SegAI4ArcticVisualizationHook', tasks=GT_type, num_classes=num_classes, downsample_factor=None, metrics=metrics, combined_score_weights=combined_score_weights, draw=True))
 
 
 GT_type = ['SIC', 'SOD', 'FLOE']
