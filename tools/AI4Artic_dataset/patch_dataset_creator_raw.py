@@ -34,8 +34,10 @@ def Arguments():
     """
 
     parser = argparse.ArgumentParser()
+    timestamp = datetime.now().strftime('%m-%d_%H-%M')
+
     parser.add_argument('--root', default='/home/' + os.getenv('LOGNAME') + '/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3', type=str, help='')
-    parser.add_argument('--output', default='/home/' + os.getenv('LOGNAME') + '/scratch/dataset/ai4arctic/', type=str, help='')
+    parser.add_argument('--output', default=f'/home/{os.getenv("LOGNAME")}/scratch/dataset/ai4arctic/{timestamp}/', type=str, help='')
 
     parser.add_argument('--downsampling', default=3, type=int, help='Downsampling of the scene')
     parser.add_argument('--patch_size', default=256, type=int, help='size of patch')
@@ -316,7 +318,10 @@ def Extract_patches(args, item):
         month, day = get_time_of_year(data_patch['scene_id'])
         data_patch['month'] = np.ones((args.patch_size, args.patch_size)) * month
         data_patch['day'] = np.ones((args.patch_size, args.patch_size)) * day
-        joblib.dump(data_patch, output_folder + "/{:05d}.pkl".format(i))
+        
+        output_path = output_folder + "/{:05d}.pkl".format(i)
+        joblib.dump(data_patch, output_path)
+        print(f"Successfully dumped to {output_path}")
 
 if __name__ == '__main__':   
 
@@ -324,7 +329,7 @@ if __name__ == '__main__':
     args = Arguments()
 
     # Grab all .nc files from root as a string list
-    scene_files = glob.glob(args.root + '/*.nc')
+    scene_files = glob.glob(args.root + '/*.nc')[:4]
     
     #  ---------------- GET INDEXES
     start_time = time.time()
