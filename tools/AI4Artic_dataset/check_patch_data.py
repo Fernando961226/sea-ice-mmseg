@@ -5,17 +5,27 @@ File use to check the output of patch_dataset_creator_raw.py and patch_dataset_c
 
 #%%
 import joblib
-import matplotlib.pyplot as plt
-
+import numpy as np
 
 # Specify the path to the saved .pkl file
-file_path = '/home/j3hsiao/scratch/dataset/ai4arctic/down_scale_10X/S1A_EW_GRDM_1SDH_20190105T102726_20190105T102828_025341_02CE03_7680_icechart_cis_SGRDIEA_20190105T1023Z_pl_a/00000.pkl'
+file_path = '/home/j3hsiao/scratch/dataset/ai4arctic/07-02_15-27/down_scale_10X/S1A_EW_GRDM_1SDH_20210914T080148_20210914T080253_039675_04B0EB_9542_icechart_dmi_202109140800_North_RIC/00000.pkl'
 
 # Load the dictionary from the .pkl file
 data_patch = joblib.load(file_path)
 
-# Now 'loaded_data_patch' contains the deserialized dictionary
-print(data_patch)
+# Check if 'sar_pos_spherical' is in the loaded dictionary
+if 'sar_pos_spherical' in data_patch:
+    sar_pos_spherical = data_patch['sar_pos_spherical']
+    
+    # Print the shape of the array
+    print("Shape of 'sar_pos_spherical':", np.shape(sar_pos_spherical))
+    
+    # Print the values of the array
+    print("Values of 'sar_pos_spherical':")
+    print(sar_pos_spherical)
+else:
+    print("'sar_pos_spherical' not found in the loaded data patch.")
+
 # %%
 
 keys = ['nersc_sar_primary',

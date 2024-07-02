@@ -17,10 +17,17 @@ def Parallel(function, iterable, *args, n_cores=None):
         n_cores = multiprocessing.cpu_count() - 1
     print('Configuring CPU multiprocessing...')
     print('Number of cores: %d'%(n_cores))
-    p = multiprocessing.Pool(n_cores)
-    func = partial(function, *args)
-    x = p.map(func, iterable)
-    p.close()
-    p.join()
-
-    return x
+    
+    try:
+        with multiprocessing.Pool(n_cores) as p:
+            func = partial(function, *args)
+            x = p.map(func, iterable)
+    except Exception as e:
+        print(f"Exception in Parallel execution: {e}")
+        raise
+    else:
+        print('Multiprocessing completed successfully.')
+        return x
+    finally:
+        p.close()
+        p.join()

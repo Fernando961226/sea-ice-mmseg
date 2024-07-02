@@ -34,6 +34,8 @@ pip install mmengine>=0.8.3
 pip install mmcv
 pip install -v -e .
 pip install joblib
+pip install lightning
+pip install einops
 
 # mmwhale_dir=$(pwd)
 

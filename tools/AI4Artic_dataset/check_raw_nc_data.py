@@ -1,7 +1,7 @@
 import h5netcdf
 
 # Replace 'your_file.nc' with the path to your NetCDF file
-nc_file = '/home/j3hsiao/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3/S1A_EW_GRDM_1SDH_20190105T102726_20190105T102828_025341_02CE03_7680_icechart_cis_SGRDIEA_20190105T1023Z_pl_a.nc'
+nc_file = '/home/j3hsiao/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3/S1A_EW_GRDM_1SDH_20210914T080148_20210914T080253_039675_04B0EB_9542_icechart_dmi_202109140800_North_RIC.nc'
 
 # Open the NetCDF file for reading
 with h5netcdf.File(nc_file, 'r') as f:

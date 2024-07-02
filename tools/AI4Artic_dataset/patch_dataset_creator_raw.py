@@ -21,9 +21,9 @@ import datetime
 from dateutil import relativedelta
 from convert_raw_icechart import convert_polygon_icechart
 from parallel_stuff import Parallel
+from locationencoder.locationencoder import LocationEncoder
 from scipy.interpolate import RegularGridInterpolator
 import wandb
-
 
 def Arguments():
     """
@@ -34,7 +34,7 @@ def Arguments():
     """
 
     parser = argparse.ArgumentParser()
-    timestamp = datetime.now().strftime('%m-%d_%H-%M')
+    timestamp = datetime.datetime.now().strftime('%m-%d_%H-%M')
 
     parser.add_argument('--root', default='/home/' + os.getenv('LOGNAME') + '/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3', type=str, help='')
     parser.add_argument('--output', default=f'/home/{os.getenv("LOGNAME")}/scratch/dataset/ai4arctic/{timestamp}/', type=str, help='')
@@ -251,9 +251,30 @@ def Extract_patches(args, item):
         data['sar_nan_mask'] = torch.nn.functional.interpolate(input=torch.from_numpy(np.float32(data['sar_nan_mask'])).unsqueeze(0).unsqueeze(0),
                                                             size=(rows_down, cols_down), mode='nearest').numpy().squeeze().astype(bool)
 
+    # ----------- SPHERICAL POSITIONAL ENCODING OF LAT/LONG
+    # https://iclr.cc/virtual/2024/poster/18690
+    hparams = dict(
+        legendre_polys=10,
+        dim_hidden=64,
+        num_layers=2,
+        optimizer=dict(lr=1e-4, wd=1e-3),
+        num_classes=1
+    )
+    model = LocationEncoder("sphericalharmonics", "siren", hparams)
+
+    def Encoding(lat, lon):
+        lonlat = torch.tensor([[lat, lon]], dtype=torch.float32)
+        result = model(lonlat)
+        encoding = result.detach().numpy().item()
+        # ic(lat, lon, encoding)
+        return encoding
+
+    sar_pos_spherical = [Encoding(lat, lon) for lat, lon in zip(scene['sar_grid_latitude'].values, scene['sar_grid_longitude'].values)]
+    scene['sar_pos_spherical'] = sar_pos_spherical
+
     # ----------- INTERPOLATE GRID VARIABLES TO MATCH SAR
 
-    grid_variables = ['sar_grid_latitude', 'sar_grid_longitude', 'sar_grid_incidenceangle']
+    grid_variables = ['sar_pos_spherical', 'sar_grid_incidenceangle']
 
     # Extract and reshape the initial x and y coordinates
     x = scene['sar_grid_sample'].values
@@ -329,7 +350,7 @@ if __name__ == '__main__':
     args = Arguments()
 
     # Grab all .nc files from root as a string list
-    scene_files = glob.glob(args.root + '/*.nc')[:4]
+    scene_files = glob.glob(args.root + '/*.nc')[:2]
     
     #  ---------------- GET INDEXES
     start_time = time.time()
