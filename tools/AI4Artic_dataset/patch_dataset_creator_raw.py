@@ -21,7 +21,7 @@ import datetime
 from dateutil import relativedelta
 from convert_raw_icechart import convert_polygon_icechart
 from parallel_stuff import Parallel
-from locationencoder.locationencoder import LocationEncoder
+from locationencoder.encoder import LocationEncoder
 from scipy.interpolate import RegularGridInterpolator
 import wandb
 
