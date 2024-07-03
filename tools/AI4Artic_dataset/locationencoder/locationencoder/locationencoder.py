@@ -1,9 +1,9 @@
 from torch import optim, nn
 import lightning.pytorch as pl
 
-import locationencoder.pe as PE
-import locationencoder.nn as NN
-from utils.losses import get_loss_fn
+import locationencoder.locationencoder.pe as PE
+import locationencoder.locationencoder.nn as NN
+from locationencoder.utils.losses import get_loss_fn
 
 from sklearn.metrics import (
     accuracy_score, 
