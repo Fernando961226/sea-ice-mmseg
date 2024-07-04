@@ -318,6 +318,7 @@ def Extract_patches(args, item):
         data_patch['day'] = np.ones((args.patch_size, args.patch_size)) * day
         joblib.dump(data_patch, output_folder + "/{:05d}.pkl".format(i))
 
+
 if __name__ == '__main__':   
 
     # wandb.init(project='extract_patches')
@@ -325,6 +326,8 @@ if __name__ == '__main__':
 
     # Grab all .nc files from root as a string list
     scene_files = glob.glob(args.root + '/*.nc')
+
+    print("Number of scenes: %d"%(len(scene_files)))
     
     #  ---------------- GET INDEXES
     start_time = time.time()

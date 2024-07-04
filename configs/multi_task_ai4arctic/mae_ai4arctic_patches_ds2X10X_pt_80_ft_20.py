@@ -8,6 +8,7 @@ _base_ = [
 ]
 # copied from vit_vit-b16_mln_upernet_8xb2-160k_ade20k-512x512.py
 import os
+import numpy as np
 
 crop_size = (256, 256)
 scale = (256, 256)
@@ -20,15 +21,40 @@ metrics = {'SIC': 'r2', 'SOD': 'f1', 'FLOE': 'f1'}
 combined_score_weights = [2, 2, 1]
 
 possible_channels = ['nersc_sar_primary', 'nersc_sar_secondary', 
-                     'sar_grid_incidenceangle', 'sar_grid_latitude', 'sar_grid_longitude',
-                     'distance_map', 'btemp_6_9h', 'btemp_6_9v', 'btemp_7_3h', 'btemp_7_3v', 'btemp_10_7h', 'btemp_10_7v', 'btemp_18_7h',
+                     'distance_map', 
+                     'btemp_6_9h', 'btemp_6_9v', 'btemp_7_3h', 'btemp_7_3v', 'btemp_10_7h', 'btemp_10_7v', 'btemp_18_7h',
                      'btemp_18_7v', 'btemp_23_8h', 'btemp_23_8v', 'btemp_36_5h', 'btemp_36_5v', 'btemp_89_0h', 'btemp_89_0v',
-                     'u10m_rotated', 'v10m_rotated', 't2m', 'skt', 'tcwv', 'tclw', 'month', 'day']
-mean = [-14.508254953309349, -24.701211250236728, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-std  = [5.659745919326586  , 4.746759336539111  , 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-mean = dict(zip(possible_channels, mean))
-std = dict(zip(possible_channels, std))
+                     'u10m_rotated', 'v10m_rotated', 't2m', 'skt', 'tcwv', 'tclw', 
+                     'sar_grid_incidenceangle', 
+                     'sar_grid_latitude', 'sar_grid_longitude', 'month', 'day']
 
+# dataset settings
+dataset_type_train = 'AI4ArcticPatches'
+dataset_type_val = 'AI4Arctic'
+
+data_root_nc = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3'
+data_root_patches = '/home/jnoat92/scratch/dataset/ai4arctic/'
+gt_root = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3_segmaps'
+
+file_train = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
+file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
+
+# load normalization params
+global_meanstd = np.load(os.path.join(data_root_nc, 'global_meanstd.npy'), allow_pickle=True).item()
+mean, std = {}, {}
+for i in possible_channels:
+    ch = i if i != 'sar_grid_incidenceangle' else 'sar_incidenceangle'
+    if ch not in global_meanstd.keys(): continue
+    mean[i] = global_meanstd[ch]['mean']
+    std[i]  = global_meanstd[ch]['std']
+
+mean['sar_grid_latitude'] = 69.14857395508363;   std['sar_grid_latitude']  = 7.023603113019076
+mean['sar_grid_longitude']= -56.351130746236606; std['sar_grid_longitude'] = 31.263271402859893
+mean['month'] = 6; std['month']  = 3.245930125274979
+mean['day'] = 182; std['day']  = 99.55635507719892
+
+
+# channels to use
 channels = [
     # # -- Sentinel-1 variables -- #
     'nersc_sar_primary',
@@ -59,21 +85,6 @@ channels = [
     # 'month', 'day'
 ]
 
-# dataset settings
-dataset_type_train = 'AI4ArcticPatches'
-dataset_type_val = 'AI4Arctic'
-
-data_root_nc = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3'
-data_root_patches = '/home/jnoat92/scratch/dataset/ai4arctic/'
-gt_root = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3_segmaps'
-
-file_train = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
-file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
-
-# data_root_test = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3'
-# test_root = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3_segmaps'
-# finetune_ann_file = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
-# test_ann_file = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3/test.txt'
 
 # ------------- TRAIN SETUP
 train_pipeline = [

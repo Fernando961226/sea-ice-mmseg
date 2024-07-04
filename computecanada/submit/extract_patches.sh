@@ -2,7 +2,7 @@
 #SBATCH --nodes 1
 #SBATCH --cpus-per-task=48 # change this parameter to 2,4,6,... and increase "--num_workers" accordingly to see the effect on performance
 #SBATCH --mem=510000M
-#SBATCH --time=1:59:00
+#SBATCH --time=2:59:00
 #SBATCH --output=../output/%j.out
 #SBATCH --account=def-dclausi
 #SBATCH --mail-user=jnoat92@gmail.com
@@ -25,7 +25,7 @@ echo "Activating virtual environment done"
 
 cd $HOME/projects/rrg-dclausi/$USER/sea-ice-mmseg/tools/AI4Artic_dataset
 
-# # python patch_dataset_creator_raw.py --downsampling 1
+# python patch_dataset_creator_raw.py --downsampling 1
 # python patch_dataset_creator_raw.py --downsampling 2
 # python patch_dataset_creator_raw.py --downsampling 3
 # python patch_dataset_creator_raw.py --downsampling 4
