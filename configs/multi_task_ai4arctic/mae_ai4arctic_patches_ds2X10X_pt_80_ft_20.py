@@ -152,8 +152,8 @@ norm_cfg = dict(type='SyncBN', requires_grad=True)
 data_preprocessor = dict(
     type='SegDataPreProcessor',
     size=crop_size,
-    mean=[0, 0, 0],
-    std=[1, 1, 1],
+    mean=None,
+    std=None,
     bgr_to_rgb=False,
     pad_val=255,
     seg_pad_val=255)
