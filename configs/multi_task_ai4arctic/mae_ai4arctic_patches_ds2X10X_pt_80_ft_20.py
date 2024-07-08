@@ -110,7 +110,8 @@ concat_dataset = dict(type='ConcatDataset',
 train_dataloader = dict(batch_size=8,
                         num_workers=4,
                         persistent_workers=True,
-                        sampler=dict(type='InfiniteSampler', shuffle=True),
+                        sampler=dict(type='WeightedInfiniteSampler', use_weights=True),
+                        # sampler=dict(type='InfiniteSampler', shuffle=True),
                         dataset=concat_dataset)
 
 # ------------- VAL SETUP
@@ -130,7 +131,6 @@ val_pipeline = [
                                           'flip_direction', 'reduce_zero_label', 'dws_factor')) 
                                           # 'dws_factor' is the only non-default parameter
 ]
-
 
 val_dataloader = dict(batch_size=1,
                       num_workers=4,
@@ -323,6 +323,7 @@ custom_imports = dict(
     #          'mmseg.datasets.transforms.loading_ai4arctic',
     imports=['mmseg.datasets.ai4arctic_patches',
              'mmseg.datasets.transforms.loading_ai4arctic_patches',
+             'mmseg.structures.sampler.ai4arctic_multires_sampler',
              'mmseg.models.segmentors.mutitask_encoder_decoder',
              'mmseg.evaluation.metrics.multitask_iou_metric',
              'mmseg.engine.hooks.ai4arctic_visualization_hook'],
