@@ -56,33 +56,33 @@ mean['day'] = 182; std['day']  = 99.55635507719892
 
 # channels to use
 channels = [
-    # # -- Sentinel-1 variables -- #
+    # -- Sentinel-1 variables -- #
     'nersc_sar_primary',
     'nersc_sar_secondary',
 
-    # # -- incidence angle -- #
-    # 'sar_grid_incidenceangle',
+    # -- incidence angle -- #
+    'sar_grid_incidenceangle',
 
-    # # -- Geographical variables -- #
-    # 'sar_grid_latitude',
-    # 'sar_grid_longitude',
+    # -- Geographical variables -- #
+    'sar_grid_latitude',
+    'sar_grid_longitude',
     'distance_map',
 
-    # # # -- AMSR2 channels -- #
-    # 'btemp_6_9h', 'btemp_6_9v',
-    # 'btemp_7_3h', 'btemp_7_3v',
-    # 'btemp_10_7h', 'btemp_10_7v',
-    # 'btemp_18_7h', 'btemp_18_7v',
-    # 'btemp_23_8h', 'btemp_23_8v',
-    # 'btemp_36_5h', 'btemp_36_5v',
-    # 'btemp_89_0h', 'btemp_89_0v',
+    # # -- AMSR2 channels -- #
+    'btemp_6_9h', 'btemp_6_9v',
+    'btemp_7_3h', 'btemp_7_3v',
+    'btemp_10_7h', 'btemp_10_7v',
+    'btemp_18_7h', 'btemp_18_7v',
+    'btemp_23_8h', 'btemp_23_8v',
+    'btemp_36_5h', 'btemp_36_5v',
+    'btemp_89_0h', 'btemp_89_0v',
 
-    # # # -- Environmental variables -- #
-    # 'u10m_rotated', 'v10m_rotated',
-    # 't2m', 'skt', 'tcwv', 'tclw',
+    # # -- Environmental variables -- #
+    'u10m_rotated', 'v10m_rotated',
+    't2m', 'skt', 'tcwv', 'tclw',
 
-    # # -- acquisition time
-    # 'month', 'day'
+    # -- acquisition time
+    'month', 'day'
 ]
 
 
