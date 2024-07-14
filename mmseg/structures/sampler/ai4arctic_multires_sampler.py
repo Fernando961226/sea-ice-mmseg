@@ -39,7 +39,6 @@ class WeightedInfiniteSampler(InfiniteSampler):
 
             sizes = torch.as_tensor(dataset.cumulative_sizes, dtype=torch.double)
             sizes = torch.cat((sizes[:1], sizes[1:] - sizes[:-1]))
-            # sizes[1:] -= sizes[:-1]
             weights = []
             for sz in sizes:
                 weights.extend([1/sz]*int(sz))

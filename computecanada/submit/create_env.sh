@@ -7,8 +7,8 @@ echo "loading module done"
 
 echo "Creating new virtualenv"
 
-virtualenv ~/$1
-source ~/$1/bin/activate
+virtualenv ~/env_mmsegmentation
+source ~/env_mmsegmentation/bin/activate
 
 echo "Activating virtual env"
 

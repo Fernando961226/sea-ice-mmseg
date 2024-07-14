@@ -32,9 +32,11 @@ possible_channels = ['nersc_sar_primary', 'nersc_sar_secondary',
 dataset_type_train = 'AI4ArcticPatches'
 dataset_type_val = 'AI4Arctic'
 
-data_root_nc = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3'
+data_root_train_nc = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3'
+data_root_test_nc = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3'
 data_root_patches = '/home/jnoat92/scratch/dataset/ai4arctic/'
-gt_root = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3_segmaps'
+
+gt_root_test = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3_segmaps'
 
 # file_train = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
 # file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
@@ -43,7 +45,7 @@ file_train = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw
 file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3/test.txt'
 
 # load normalization params
-global_meanstd = np.load(os.path.join(data_root_nc, 'global_meanstd.npy'), allow_pickle=True).item()
+global_meanstd = np.load(os.path.join(data_root_train_nc, 'global_meanstd.npy'), allow_pickle=True).item()
 mean, std = {}, {}
 for i in possible_channels:
     ch = i if i != 'sar_grid_incidenceangle' else 'sar_incidenceangle'
@@ -121,13 +123,13 @@ train_dataloader = dict(batch_size=8,
 val_pipeline = [
     # dict(type='LoadPatchFromPKLFile', channels=channels, mean=mean, std=std, 
     #      to_float32=True, nan=255, with_seg=True, GT_type=GT_type),
-    dict(type='PreLoadImageandSegFromNetCDFFile', data_root=data_root_nc, gt_root=gt_root, 
+    dict(type='PreLoadImageandSegFromNetCDFFile', data_root=data_root_test_nc, gt_root=gt_root_test, 
          ann_file=file_val, channels=channels, mean=mean, std=std, to_float32=True, nan=255, 
          downsample_factor=-1, with_seg=True, GT_type=GT_type),
     # dict(type='Resize', scale=scale, keep_ratio=True),
     # add loading annotation after ``Resize`` because ground truth
     # does not need to do resize data transform
-    # dict(type='LoadGTFromPNGFile', gt_root=test_root,
+    # dict(type='LoadGTFromPNGFile', gt_root=gt_root_test,
     #      downsample_factor=downsample_factor, GT_type=GT_type),
     dict(type='PackSegInputs', meta_keys=('img_path', 'seg_map_path', 'ori_shape',
                                           'img_shape', 'pad_shape', 'scale_factor', 'flip',
@@ -140,7 +142,7 @@ val_dataloader = dict(batch_size=1,
                       persistent_workers=True,
                       sampler=dict(type='DefaultSampler', shuffle=False),
                       dataset=dict(type=dataset_type_val,
-                                   data_root=data_root_nc,
+                                   data_root=data_root_test_nc,
                                    ann_file=file_val,
                                    pipeline=val_pipeline))
                     #   dataset=dict(type=dataset_type_train,
