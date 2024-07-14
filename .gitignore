@@ -133,6 +133,6 @@ mmseg/.mim/
 *.pth
 # compute canada
 *.out
-compute_canada/submit/wandb/settings
-wandb/settings
+computecanada/output
+wandb/
 =0.8.3

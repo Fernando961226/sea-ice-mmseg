@@ -38,7 +38,7 @@ def Arguments():
     parser.add_argument('--output', default='/home/' + os.getenv('LOGNAME') + '/scratch/dataset/ai4arctic/', type=str, help='')
 
     parser.add_argument('--downsampling', default=3, type=int, help='Downsampling of the scene')
-    parser.add_argument('--patch_size', default=256, type=int, help='size of patch')
+    parser.add_argument('--patch_size', default=512, type=int, help='size of patch')
     parser.add_argument('--overlap', default=0.0, type=float, help='Amount of overlap. Max 1, Min 0')
 
     parser.add_argument('--n_cores', default=16, type=int, help='Number of CPU cores to use in parallel process')
@@ -204,9 +204,6 @@ def Extract_patches(args, item):
     """
     
     scene_file, patch_idx = item
-    if not len(patch_idx):
-        print("Number of patches = 0 for scene %s"%(os.path.split(scene_file)[1]))
-        return
     
     down_scale = args.downsampling
     scene = xr.open_dataset(scene_file, engine='h5netcdf')
@@ -214,6 +211,11 @@ def Extract_patches(args, item):
     ic(output_folder)
     if os.path.exists(output_folder): shutil.rmtree(output_folder)
     os.makedirs(output_folder, exist_ok=True)
+
+    if not len(patch_idx):
+        print("Number of patches = 0 for scene %s"%(os.path.split(scene_file)[1]))
+        return
+
     data = {}
 
     #  ---------- Get the SIC, SOD, FLOE Charts
@@ -231,6 +233,7 @@ def Extract_patches(args, item):
 
     # ----------- DOWNN SCALE SAR
     rows_down, cols_down = rows, cols
+    down_rows, down_cols = 1, 1
 
     if down_scale > 1:
         # Block average 2x2 before downsampling SAR channels

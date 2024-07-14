@@ -10,9 +10,9 @@ _base_ = [
 import os
 import numpy as np
 
-crop_size = (256, 256)
-scale = (256, 256)
-downsample_factor_train = [2, 8]   # List all downsampling factors from 2X to 10X to include during training
+crop_size = (512, 512)
+scale = (512, 512)
+downsample_factor_train = [2, 3, 4, 5, 6, 7, 8, 9, 10]   # List all downsampling factors from 2X to 10X to include during training
 downsample_factor_val = 2
 
 GT_type = ['SIC', 'SOD', 'FLOE']
@@ -36,8 +36,11 @@ data_root_nc = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_r
 data_root_patches = '/home/jnoat92/scratch/dataset/ai4arctic/'
 gt_root = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3_segmaps'
 
-file_train = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
-file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
+# file_train = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
+# file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/val_file_jnoat92.txt'
+
+file_train = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3/finetune_20.txt'
+file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3/test.txt'
 
 # load normalization params
 global_meanstd = np.load(os.path.join(data_root_nc, 'global_meanstd.npy'), allow_pickle=True).item()
@@ -60,29 +63,29 @@ channels = [
     'nersc_sar_primary',
     'nersc_sar_secondary',
 
-    # -- incidence angle -- #
-    'sar_grid_incidenceangle',
+    # # -- incidence angle -- #
+    # 'sar_grid_incidenceangle',
 
-    # -- Geographical variables -- #
-    'sar_grid_latitude',
-    'sar_grid_longitude',
-    'distance_map',
+    # # -- Geographical variables -- #
+    # 'sar_grid_latitude',
+    # 'sar_grid_longitude',
+    # 'distance_map',
 
-    # # -- AMSR2 channels -- #
-    'btemp_6_9h', 'btemp_6_9v',
-    'btemp_7_3h', 'btemp_7_3v',
-    'btemp_10_7h', 'btemp_10_7v',
-    'btemp_18_7h', 'btemp_18_7v',
-    'btemp_23_8h', 'btemp_23_8v',
-    'btemp_36_5h', 'btemp_36_5v',
-    'btemp_89_0h', 'btemp_89_0v',
+    # # # -- AMSR2 channels -- #
+    # 'btemp_6_9h', 'btemp_6_9v',
+    # 'btemp_7_3h', 'btemp_7_3v',
+    # 'btemp_10_7h', 'btemp_10_7v',
+    # 'btemp_18_7h', 'btemp_18_7v',
+    # 'btemp_23_8h', 'btemp_23_8v',
+    # 'btemp_36_5h', 'btemp_36_5v',
+    # 'btemp_89_0h', 'btemp_89_0v',
 
-    # # -- Environmental variables -- #
-    'u10m_rotated', 'v10m_rotated',
-    't2m', 'skt', 'tcwv', 'tclw',
+    # # # -- Environmental variables -- #
+    # 'u10m_rotated', 'v10m_rotated',
+    # 't2m', 'skt', 'tcwv', 'tclw',
 
-    # -- acquisition time
-    'month', 'day'
+    # # -- acquisition time
+    # 'month', 'day'
 ]
 
 
@@ -286,7 +289,7 @@ param_scheduler = [
 ]
 # training schedule for 160k
 train_cfg = dict(
-    type='IterBasedTrainLoop', max_iters=20, val_interval=10)
+    type='IterBasedTrainLoop', max_iters=20000, val_interval=1000)
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=1, log_metric_by_epoch=False),
@@ -304,7 +307,7 @@ metrics = {'SIC': 'r2', 'SOD': 'f1', 'FLOE': 'f1'}
 
 vis_backends = [dict(type='WandbVisBackend',
                      init_kwargs=dict(
-                         entity='mmwhale',
+                         entity='jnoat92',
                          project='MAE-finetune',
                          name='{{fileBasenameNoExtension}}',),
                      #  name='filename',),

@@ -23,17 +23,18 @@ source ~/env_mmsegmentation/bin/activate
 
 echo "Activating virtual environment done"
 
-cd $HOME/projects/rrg-dclausi/$USER/sea-ice-mmseg/tools/AI4Artic_dataset
+cd $HOME/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/tools/AI4Artic_dataset
 
-# python patch_dataset_creator_raw.py --downsampling 1
-# python patch_dataset_creator_raw.py --downsampling 2
-# python patch_dataset_creator_raw.py --downsampling 3
-# python patch_dataset_creator_raw.py --downsampling 4
-# python patch_dataset_creator_raw.py --downsampling 5
 # python patch_dataset_creator_raw.py --downsampling 6
 # python patch_dataset_creator_raw.py --downsampling 7
 # python patch_dataset_creator_raw.py --downsampling 8
 # python patch_dataset_creator_raw.py --downsampling 9
+
+# python patch_dataset_creator_raw.py --downsampling 2
+# python patch_dataset_creator_raw.py --downsampling 3
+# python patch_dataset_creator_raw.py --downsampling 4
+# python patch_dataset_creator_raw.py --downsampling 5
 python patch_dataset_creator_raw.py --downsampling 10
 
 
+# python patch_dataset_creator_raw.py --downsampling 1
