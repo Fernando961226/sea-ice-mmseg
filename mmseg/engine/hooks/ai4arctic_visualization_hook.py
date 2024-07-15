@@ -360,7 +360,7 @@ class SegAI4ArcticVisualizationHook(Hook):
             gt_sem_seg = {}
             for i, task in enumerate(tasks):
                 gt_sem_seg = data_sample.gt_sem_seg.data.cpu().numpy()[
-                    i, :, :].astype(np.float16)
+                    :, :, i].astype(np.float16)
                 gt_sem_seg[gt_sem_seg == 255] = np.nan
 
                 pred_sem_seg = data_sample.get(f'pred_sem_seg_{task}').data.cpu().numpy()[
@@ -414,7 +414,7 @@ class SegAI4ArcticVisualizationHook(Hook):
 
             for i, task in enumerate(tasks):
                 gt_sem_seg = data_sample.gt_sem_seg.data.cpu().numpy()[
-                    i, :, :].astype(np.float16)
+                    :, :, i].astype(np.float16)
                 gt_sem_seg[gt_sem_seg == 255] = np.nan
                 pred_sem_seg = data_sample.get(f'pred_sem_seg_{task}').data.cpu().numpy()[
                     0, :, :].astype(np.float16)
