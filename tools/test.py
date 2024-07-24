@@ -13,6 +13,8 @@ def parse_args():
         description='MMSeg test (and eval) a model')
     parser.add_argument('config', help='train config file path')
     parser.add_argument('checkpoint', help='checkpoint file')
+    # parser.add_argument('--config', default = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/configs/multi_task_ai4arctic/mae_ai4arctic_patches_ds2X10X_pt_80_ft_20.py', help='train config file path')
+    # parser.add_argument('--checkpoint', default = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs/mae_ai4arctic_patches_ds2X10X_pt_80_ft_20/iter_1000.pth', help='checkpoint file path')
     parser.add_argument(
         '--work-dir',
         help=('if specified, the evaluation metric results will be dumped'

@@ -276,6 +276,8 @@ class SegAI4ArcticVisualizationHook(Hook):
             {f'val/Combined score': combined_score})
         runner.visualizer._vis_backends['WandbVisBackend']._commit = True
 
+        del self.pred_flat, self.GT_flat
+
     def before_test(self, runner) -> None:
         """All subclasses should override this method, if they need any
         operations before testing.
@@ -463,3 +465,5 @@ class SegAI4ArcticVisualizationHook(Hook):
         runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
             {f'test/Combined score': combined_score})
         runner.visualizer._vis_backends['WandbVisBackend']._commit = True
+
+        del self.pred_flat, self.GT_flat

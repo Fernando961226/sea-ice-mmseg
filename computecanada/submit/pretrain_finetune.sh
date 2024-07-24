@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes 1
-#SBATCH --gpus-per-node=2 # request a GPU
-#SBATCH --tasks-per-node=2
+#SBATCH --gpus-per-node=1 # request a GPU
+#SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=12 # change this parameter to 2,4,6,... and increase "--num_workers" accordingly to see the effect on performance
 #SBATCH --mem=200G
-#SBATCH --time=9:59:00
+#SBATCH --time=19:59:00
 #SBATCH --output=../output/%j.out
 #SBATCH --account=rrg-dclausi
-#SBATCH --mail-user=muhammed.computecanada@gmail.com
+#SBATCH --mail-user=jnoat92@gmail.com
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
@@ -22,8 +22,6 @@ echo "loading module done"
 # cd /home/m32patel/projects/def-y2863che/ai4arctic/m32patel/mmselfsup
 
 # echo "starting pretrain and finetune..."
-
-# export WANDB_MODE=offline
 
 # echo "Config file: $1"
 # # srun --ntasks=2 --gres=gpu:2  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm --resume
@@ -54,14 +52,21 @@ cd /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg
 source ~/env_mmsegmentation/bin/activate
 echo "Activating virtual environment done"
 
+export WANDB_MODE=offline
+export WANDB_DATA_DIR='/home/jnoat92/scratch/wandb'
+
 echo "Config file: $2"
 
-CHECKPOINT=(/home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs/mae_ai4arctic_ds2_pt_80_ft_20/iter_40000.pth)
-srun --ntasks=2 --gres=gpu:2  --kill-on-bad-exit=1 --cpus-per-task=8 python tools/train.py $2 --launcher slurm --cfg-options model.backbone.init_cfg.checkpoint=${CHECKPOINT} model.backbone.init_cfg.type='Pretrained' model.backbone.init_cfg.prefix='backbone.'
+# CHECKPOINT=(/home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs/mae_ai4arctic_ds2_pt_80_ft_20/iter_40000.pth)
+# srun --ntasks=1 --gres=gpu:1  --kill-on-bad-exit=1 --cpus-per-task=8 python tools/train.py $2 --launcher none --cfg-options model.backbone.init_cfg.checkpoint=${CHECKPOINT} model.backbone.init_cfg.type='Pretrained' model.backbone.init_cfg.prefix='backbone.'
 
-# # Extract the base name without extension
-# base_name_mmseg=$(basename "$2" .py)
-# CHECKPOINT_mmseg=$(cat work_dirs/$base_name_mmseg/last_checkpoint)
-# echo "mmseg checkpoint $CHECKPOINT_mmseg"
+srun --ntasks=1 --gres=gpu:1  --kill-on-bad-exit=1 --cpus-per-task=8 python tools/train.py $2
 
-# python tools/test.py $2 $CHECKPOINT_mmseg --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/
+# srun --ntasks=1 --gres=gpu:1  --kill-on-bad-exit=1 --cpus-per-task=8 python tools/train.py $2 --resume
+
+# Extract the base name without extension
+base_name_mmseg=$(basename "$2" .py)
+CHECKPOINT_mmseg=$(cat work_dirs/$base_name_mmseg/last_checkpoint)
+echo "mmseg checkpoint $CHECKPOINT_mmseg"
+
+python tools/test.py $2 $CHECKPOINT_mmseg --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/
