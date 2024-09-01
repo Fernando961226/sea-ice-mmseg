@@ -294,9 +294,8 @@ optim_wrapper = dict(
 
 n_iterations = 150000
 # param_scheduler = [dict(type='CosineAnnealingLR', T_max=10000, by_epoch=False) for i in range(n_iterations//10000)]
-param_scheduler = [ dict(type='CosineRestartLR', 
-                         param_name = 'lr',
-                         periods= [10000 for i in range(n_iterations//10000)],
+param_scheduler = [ dict(type='CosineRestartLR',
+                         periods=[10000 for i in range(n_iterations//10000)],
                          eta_min=1e-6,
                          by_epoch=False)]
 # param_scheduler = [
