@@ -119,10 +119,10 @@ class LoadPatchFromPKLFile(BaseTransform):
         data = joblib.load(filename)
 
         # Filter channels and normalize
-        img = np.asarray([(data[key] - self.mean[key]) / self.std[key] for key in self.channels])
-        img = img.transpose((1, 2, 0))
+        img_ = np.asarray([(data[key] - self.mean[key]) / self.std[key] for key in self.channels])
+        img_ = img_.transpose((1, 2, 0))
         if self.to_float32:
-            img = img.astype(np.float32)
+            img = img_.astype(np.float32)
         img = np.nan_to_num(img, nan=self.nan)
         results['img'] = img
         results['img_shape'] = img.shape[:2]
@@ -131,8 +131,11 @@ class LoadPatchFromPKLFile(BaseTransform):
         if self.with_seg:
             # Filter task
             seg_maps = np.asarray([data[key] for key in self.GT_type]).transpose((1, 2, 0))
+            seg_maps = np.nan_to_num(seg_maps, nan=self.nan)        # NaN values in labels
+            seg_maps[np.isnan(img_[:,:,0])] = self.nan              # NaN values in image
             results['gt_seg_map'] = seg_maps
             results['seg_fields'].append('gt_seg_map')
+
         return results
 
 @TRANSFORMS.register_module()
@@ -358,16 +361,20 @@ class PreLoadImageandSegFromNetCDFFile(BaseTransform):
         """
         filename = results['img_path']
         
-        img = self.pre_loaded_image_dic[filename]
+        img_ = self.pre_loaded_image_dic[filename]
         if self.to_float32:
-            img = img.astype(np.float32)
+            img = img_.astype(np.float32)
         img = np.nan_to_num(img, nan=self.nan)
         results['img'] = img
         results['img_shape'] = img.shape[:2]
         results['ori_shape'] = img.shape[:2]
         
         if self.with_seg:
-            results['gt_seg_map'] = self.pre_loaded_seg_dic[filename]
+            seg_maps = self.pre_loaded_seg_dic[filename]
+            seg_maps = np.nan_to_num(seg_maps, nan=self.nan)        # NaN values in labels
+            seg_maps[np.isnan(img_[:,:,0])] = self.nan              # NaN values in image
+
+            results['gt_seg_map'] = seg_maps
             results['seg_fields'].append('gt_seg_map')
         
         results['dws_factor'] = self.down_factor_perscene[filename]
