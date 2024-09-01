@@ -340,7 +340,7 @@ if __name__ == '__main__':
         patches_idx = Parallel(get_patch_index, iterable, args)
     else:
         patches_idx = [get_patch_index(args, next(iterable))]
-    print('Patches index generated! - time:%.2f'%(time.time()-start_time))
+    print('Patches index generated! - time: %.2f'%(time.time()-start_time))
 
     print('Number of Patches for downsampling %dX: %d'%(args.downsampling, sum([len(l) for l in patches_idx])))
     
