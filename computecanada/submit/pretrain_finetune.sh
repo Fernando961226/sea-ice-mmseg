@@ -63,8 +63,8 @@ echo "Config file: $2"
 # CHECKPOINT=(/home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs/mae_ai4arctic_ds2_pt_80_ft_20/iter_40000.pth)
 # srun --ntasks=1 --gres=gpu:1  --kill-on-bad-exit=1 --cpus-per-task=8 python tools/train.py $2 --launcher none --cfg-options model.backbone.init_cfg.checkpoint=${CHECKPOINT} model.backbone.init_cfg.type='Pretrained' model.backbone.init_cfg.prefix='backbone.'
 
-# srun --ntasks=1 --gres=gpu:1  --kill-on-bad-exit=1 --cpus-per-task=8 python tools/train.py $2 --resume
-srun --ntasks=2 --gres=gpu:2  --kill-on-bad-exit=1 --cpus-per-task=16 python tools/train.py $2 --launcher slurm
+srun --ntasks=2 --gres=gpu:2  --kill-on-bad-exit=1 --cpus-per-task=16 python tools/train.py $2 --resume --launcher slurm 
+# srun --ntasks=2 --gres=gpu:2  --kill-on-bad-exit=1 --cpus-per-task=16 python tools/train.py $2 --launcher slurm
 
 # Extract the base name without extension
 base_name_mmseg=$(basename "$2" .py)
