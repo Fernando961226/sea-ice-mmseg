@@ -59,7 +59,7 @@ class SegAI4ArcticVisualizationHook(Hook):
                  nan=255,
                  backend_args: Optional[dict] = None,
                  tasks=[''],
-                 combined_score_weights=[2, 2, 1]):
+                 combined_score_weights=[2/5, 2/5, 1/5]):
         self._visualizer: Visualizer = Visualizer.get_current_instance()
         self.downsample_factor = downsample_factor
         self.interval = interval
@@ -199,11 +199,13 @@ class SegAI4ArcticVisualizationHook(Hook):
                 ax.set_title(f'Scene {scene_name}, {task}: Pred')
                 chart_cbar(
                     ax=ax, n_classes=self.num_classes[task], chart=task, cmap='jet')
+                
+                if task == 'SIC': land_mask = nan_mask
 
             # HH without land
             ax = axs[0]
             HH = img[:, :, 0].copy()
-            HH[nan_mask] = np.nan
+            HH[land_mask] = np.nan
             ax.imshow(HH, cmap='gray')
             ax.set_xticks([])
             ax.set_yticks([])
@@ -212,7 +214,7 @@ class SegAI4ArcticVisualizationHook(Hook):
             # HV without land
             ax = axs[1]
             HV = img[:, :, 1].copy()
-            HV[nan_mask] = np.nan
+            HV[land_mask] = np.nan
             ax.imshow(HV, cmap='gray')
             ax.set_xticks([])
             ax.set_yticks([])
@@ -389,11 +391,13 @@ class SegAI4ArcticVisualizationHook(Hook):
                 ax.set_title(f'Scene {scene_name}, {task}: Pred')
                 chart_cbar(
                     ax=ax, n_classes=self.num_classes[task], chart=task, cmap='jet')
+                
+                if task == 'SIC': land_mask = nan_mask
 
             # HH without land
             ax = axs[0]
             HH = img[:, :, 0].copy()
-            HH[nan_mask] = np.nan
+            HH[land_mask] = np.nan
             ax.imshow(HH, cmap='gray')
             ax.set_xticks([])
             ax.set_yticks([])
@@ -402,7 +406,7 @@ class SegAI4ArcticVisualizationHook(Hook):
             # HV without land
             ax = axs[1]
             HV = img[:, :, 1].copy()
-            HV[nan_mask] = np.nan
+            HV[land_mask] = np.nan
             ax.imshow(HV, cmap='gray')
             ax.set_xticks([])
             ax.set_yticks([])
