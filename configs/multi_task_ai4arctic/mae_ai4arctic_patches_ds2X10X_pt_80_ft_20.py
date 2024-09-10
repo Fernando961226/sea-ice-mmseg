@@ -13,12 +13,12 @@ import numpy as np
 crop_size = (512, 512)
 scale = (512, 512)
 downsample_factor_train = [2, 3, 4, 5, 6, 7, 8, 9, 10]   # List all downsampling factors from 2X to 10X to include during training
-downsample_factor_val = 2
+downsample_factor_test = 5
 
 GT_type = ['SIC', 'SOD', 'FLOE']
 num_classes = {'SIC': 12, 'SOD': 7, 'FLOE': 8} # add 1 class extra for visualization to work correctly, put [11,6,7] in other places
 metrics = {'SIC': 'r2', 'SOD': 'f1', 'FLOE': 'f1'}
-combined_score_weights = [2, 2, 1]
+combined_score_weights = [2/5, 2/5, 1/5]
 
 possible_channels = ['nersc_sar_primary', 'nersc_sar_secondary', 
                      'distance_map', 
@@ -99,7 +99,7 @@ train_pipeline = [
     dict(
         type='RandomResize',
         scale=scale,
-        ratio_range=(1.0, 1.5),
+        ratio_range=(1.0, 1.2),
         keep_ratio=True),
     dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.9),
     dict(type='RandomFlip', prob=0.5),
@@ -113,7 +113,7 @@ concat_dataset = dict(type='ConcatDataset',
                                       ann_file = file_train,
                                       pipeline = train_pipeline) for i in downsample_factor_train])
 train_dataloader = dict(batch_size=8,
-                        num_workers=4,
+                        num_workers=8,
                         persistent_workers=True,
                         sampler=dict(type='WeightedInfiniteSampler', use_weights=True),
                         # sampler=dict(type='InfiniteSampler', shuffle=True),
@@ -121,22 +121,14 @@ train_dataloader = dict(batch_size=8,
 
 # ------------- VAL SETUP
 val_pipeline = [
-    # dict(type='LoadPatchFromPKLFile', channels=channels, mean=mean, std=std, 
-    #      to_float32=True, nan=255, with_seg=True, GT_type=GT_type),
     dict(type='PreLoadImageandSegFromNetCDFFile', data_root=data_root_test_nc, gt_root=gt_root_test, 
          ann_file=file_val, channels=channels, mean=mean, std=std, to_float32=True, nan=255, 
          downsample_factor=-1, with_seg=True, GT_type=GT_type),
-    # dict(type='Resize', scale=scale, keep_ratio=True),
-    # add loading annotation after ``Resize`` because ground truth
-    # does not need to do resize data transform
-    # dict(type='LoadGTFromPNGFile', gt_root=gt_root_test,
-    #      downsample_factor=downsample_factor, GT_type=GT_type),
     dict(type='PackSegInputs', meta_keys=('img_path', 'seg_map_path', 'ori_shape',
                                           'img_shape', 'pad_shape', 'scale_factor', 'flip',
                                           'flip_direction', 'reduce_zero_label', 'dws_factor')) 
                                           # 'dws_factor' is the only non-default parameter
 ]
-
 val_dataloader = dict(batch_size=1,
                       num_workers=4,
                       persistent_workers=True,
@@ -145,11 +137,25 @@ val_dataloader = dict(batch_size=1,
                                    data_root=data_root_test_nc,
                                    ann_file=file_val,
                                    pipeline=val_pipeline))
-                    #   dataset=dict(type=dataset_type_train,
-                    #                data_root = os.path.join(data_root_patches, 'down_scale_%dX'%(downsample_factor_val)),
-                    #                ann_file = file_val,
-                    #                pipeline = val_pipeline))
-test_dataloader = val_dataloader
+
+# ------------- TEST SETUP
+test_pipeline = [
+    dict(type='PreLoadImageandSegFromNetCDFFile', data_root=data_root_test_nc, gt_root=gt_root_test, 
+         ann_file=file_val, channels=channels, mean=mean, std=std, to_float32=True, nan=255, 
+         downsample_factor=downsample_factor_test, with_seg=True, GT_type=GT_type),
+    dict(type='PackSegInputs', meta_keys=('img_path', 'seg_map_path', 'ori_shape',
+                                          'img_shape', 'pad_shape', 'scale_factor', 'flip',
+                                          'flip_direction', 'reduce_zero_label', 'dws_factor')) 
+                                          # 'dws_factor' is the only non-default parameter
+]
+test_dataloader = dict(batch_size=1,
+                      num_workers=4,
+                      persistent_workers=True,
+                      sampler=dict(type='DefaultSampler', shuffle=False),
+                      dataset=dict(type=dataset_type_val,
+                                   data_root=data_root_test_nc,
+                                   ann_file=file_val,
+                                   pipeline=test_pipeline))
 
 
 # model settings
@@ -225,7 +231,7 @@ model = dict(
             norm_cfg=norm_cfg,
             align_corners=False,
             loss_decode=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=3.0)),
         dict(
             type='UPerHead',
             task='FLOE',
@@ -238,25 +244,26 @@ model = dict(
             norm_cfg=norm_cfg,
             align_corners=False,
             loss_decode=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0))
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=3.0))
     ],
-    auxiliary_head=dict(
-        type='FCNHead',
-        in_channels=768,
-        in_index=2,
-        channels=256,
-        num_convs=1,
-        concat_input=False,
-        dropout_ratio=0.1,
-        num_classes=6,
-        norm_cfg=norm_cfg,
-        align_corners=False,
-        loss_decode=dict(
-            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
+    auxiliary_head = None,
+    # auxiliary_head=dict(
+    #     type='FCNHead',
+    #     in_channels=768,
+    #     in_index=2,
+    #     channels=256,
+    #     num_convs=1,
+    #     concat_input=False,
+    #     dropout_ratio=0.1,
+    #     num_classes=6,
+    #     norm_cfg=norm_cfg,
+    #     align_corners=False,
+    #     loss_decode=dict(
+    #         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
     # model training and testing settings
     train_cfg=dict(),
     # test_cfg=dict(mode='whole'))  # yapf: disable
-    test_cfg=dict(mode='slide', crop_size=crop_size, stride=(crop_size[0] *90//100, crop_size[1]*90//100)))
+    test_cfg=dict(mode='slide', crop_size=crop_size, stride=(crop_size[0] *75//100, crop_size[1]*75//100)))
 
 
 val_evaluator = dict(type='MultitaskIoUMetric',
@@ -269,13 +276,15 @@ optim_wrapper = dict(
     _delete_=True,
     type='OptimWrapper',
     optimizer=dict(
-        type='AdamW', lr=0.00006, betas=(0.9, 0.999), weight_decay=0.01),
+        type='AdamW', lr=0.0005, betas=(0.9, 0.999), weight_decay=0.01),
     paramwise_cfg=dict(
         custom_keys={
             'pos_embed': dict(decay_mult=0.),
             'cls_token': dict(decay_mult=0.),
             'norm': dict(decay_mult=0.)
         }))
+
+n_iterations = 150000
 
 param_scheduler = [
     dict(
@@ -285,32 +294,30 @@ param_scheduler = [
         eta_min=0.0,
         power=1.0,
         begin=2000,
-        end=20000,
+        end=n_iterations,
         by_epoch=False,
     )
 ]
 # training schedule for 160k
 train_cfg = dict(
-    type='IterBasedTrainLoop', max_iters=20000, val_interval=1000)
+    type='IterBasedTrainLoop', max_iters=n_iterations, val_interval=2000)
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=1, log_metric_by_epoch=False),
     param_scheduler=dict(type='ParamSchedulerHook'),
     checkpoint=dict(type='CheckpointHook', by_epoch=False,
-                    interval=10, max_keep_ckpts=3),
+                    interval=50, max_keep_ckpts=3),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     visualization=dict(type='SegAI4ArcticVisualizationHook', tasks=GT_type, num_classes=num_classes, downsample_factor=None, metrics=metrics, combined_score_weights=combined_score_weights, draw=True))
-
 
 GT_type = ['SIC', 'SOD', 'FLOE']
 num_classes = {'SIC': 12, 'SOD': 7, 'FLOE': 8}
 metrics = {'SIC': 'r2', 'SOD': 'f1', 'FLOE': 'f1'}
 
-
 vis_backends = [dict(type='WandbVisBackend',
                      init_kwargs=dict(
                          entity='jnoat92',
-                         project='MAE-finetune',
+                         project='MAE-supervised-tunning',
                          name='{{fileBasenameNoExtension}}',),
                      #  name='filename',),
                      define_metric_cfg=None,
