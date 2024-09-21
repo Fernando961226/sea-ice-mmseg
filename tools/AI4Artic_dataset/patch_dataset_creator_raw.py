@@ -38,7 +38,7 @@ def Arguments():
     parser.add_argument('--output', default='/home/' + os.getenv('LOGNAME') + '/scratch/dataset/ai4arctic/', type=str, help='')
 
     parser.add_argument('--downsampling', default=3, type=int, help='Downsampling of the scene')
-    parser.add_argument('--patch_size', default=512, type=int, help='size of patch')
+    parser.add_argument('--patch_size', default=384, type=int, help='size of patch')
     parser.add_argument('--overlap', default=0.0, type=float, help='Amount of overlap. Max 1, Min 0')
 
     parser.add_argument('--n_cores', default=16, type=int, help='Number of CPU cores to use in parallel process')
