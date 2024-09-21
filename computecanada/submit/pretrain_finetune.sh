@@ -27,8 +27,8 @@ echo "loading module done"
 # echo "starting pretrain and finetune..."
 
 # echo "Config file: $1"
-# # srun --ntasks=2 --gres=gpu:2  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm --resume
-# # srun --ntasks=2 --gres=gpu:2  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm
+# # srun --ntasks=2 --gres=gpu:2 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm --resume
+# # srun --ntasks=2 --gres=gpu:2 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm
 # srun --ntasks=2 --gres=gpu:2 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm
 
 # # Extract the base name without extension
