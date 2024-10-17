@@ -7,6 +7,7 @@ import torch
 from mmengine.registry import DATA_SAMPLERS
 from mmengine.dataset.dataset_wrapper import ConcatDataset
 from mmengine.dataset.sampler import InfiniteSampler
+from mmengine.runner.runner import _SlicedDataset
 
 
 @DATA_SAMPLERS.register_module()
@@ -31,6 +32,8 @@ class WeightedInfiniteSampler(InfiniteSampler):
         super().__init__(dataset, **kwargs)
 
         if use_weights:
+            if isinstance(dataset, _SlicedDataset):
+                dataset = dataset._dataset
             assert isinstance(dataset, ConcatDataset), \
                 'The dataset must be ConcatDataset type to use this sampler'
 
