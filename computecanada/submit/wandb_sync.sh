@@ -6,7 +6,7 @@ module purge
 module load  StdEnv/2020 python/3.10.2
 module load gcc/9.3.0 opencv/4.8.0 cuda/11.7
 echo "loading module done"
-source ~/env_mmsegmentation/bin/activate
+source ~/env_mmselfsup/bin/activate
 
 for i in "${!array[@]}"; do
 
