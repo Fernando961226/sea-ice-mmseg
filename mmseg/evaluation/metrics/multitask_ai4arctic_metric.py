@@ -4,6 +4,7 @@ import os.path as osp
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional, Sequence, Union
 from torch import Tensor
+from torchmetrics.functional import r2_score, f1_score
 
 import numpy as np
 import torch
@@ -20,15 +21,17 @@ from mmengine.dist import (broadcast_object_list, collect_results,
                            is_main_process)
 from mmseg.registry import METRICS
 
-
 @METRICS.register_module()
-class MultitaskIoUMetric(BaseMetric):
+class MultitaskAi4arcticMetric(BaseMetric):
     """IoU evaluation metric.
+
+    Included by No@:
+        R2_score, weighted f1-score, Combined_score
 
     Args:
         ignore_index (int): Index that will be ignored in evaluation.
             Default: 255.
-        iou_metrics (list[str] | str): Metrics to be calculated, the options
+        metrics (list[str] | str): Metrics to be calculated, the options
             includes 'mIoU', 'mDice' and 'mFscore'.
         task (list[str]): List of task to evaluate
         nan_to_num (int, optional): If specified, NaN values will be replaced
@@ -52,7 +55,8 @@ class MultitaskIoUMetric(BaseMetric):
 
     def __init__(self,
                  ignore_index: int = 255,
-                 iou_metrics: List[str] = ['mIoU'],
+                 custom_metrics: Dict = {'SIC': 'r2', 'SOD': 'mFscore', 'FLOE': 'mFscore'},
+                 combined_score_weights: Dict = {'SIC': 2/5, 'SOD': 2/5, 'FLOE': 1/5},
                  tasks: List[str] = [''],
                  nan_to_num: Optional[int] = None,
                  beta: int = 1,
@@ -65,7 +69,8 @@ class MultitaskIoUMetric(BaseMetric):
         super().__init__(collect_device=collect_device, prefix=prefix)
 
         self.ignore_index = ignore_index
-        self.metrics = iou_metrics
+        self.metrics = custom_metrics
+        self.combined_score_weights = combined_score_weights
         self.nan_to_num = nan_to_num
         self.tasks = tasks
         self.beta = beta
@@ -95,13 +100,25 @@ class MultitaskIoUMetric(BaseMetric):
                 )
                 # format_only always for test dataset without ground truth
                 if not self.format_only:
-                    label = data_sample['gt_sem_seg']['data'].squeeze().to(
-                        pred_label)
+                    label = data_sample['gt_sem_seg']['data'].squeeze().to(pred_label)
+
+                    results = []
+                    if 'r2' in self.metrics[task] or 'f1' in self.metrics[task]:
+                        # keep predictions and target for later calculation
+                        mask = label[:, :, task_index] != self.ignore_index
+                        pred = pred_label[mask].cpu()
+                        lbl  = label[:, :, task_index][mask].cpu()
+                        results = [pred, lbl]
+                        # # # This is for average R2 (accross batches)
+                        # # # results.append(self.R2(pred_label, label[:, :, task_index], self.ignore_index))
                     num_classes = len(self.dataset_meta[f'{task}_classes'])
-                    self.results[task].append(
+                    results.extend(
                         self.intersect_and_union(
                             pred_label, label[:, :, task_index], num_classes, self.ignore_index)
                     )
+                    
+                    self.results[task].append(results)
+
                 # format_result
                 if self.output_dir is not None:
                     basename = osp.splitext(
@@ -152,8 +169,9 @@ class MultitaskIoUMetric(BaseMetric):
         if is_main_process():
             # cast all tensors in results list to cpu
             results = {task: _to_cpu(task_results)
-                       for task, task_results in results.items()}
+                        for task, task_results in results.items()}
             metrics = {}
+            metrics['combined_score'] = 0
             for task in self.tasks:
                 task_metrics = self.compute_metrics(
                     {task: results[task]})  # type: ignore
@@ -164,8 +182,11 @@ class MultitaskIoUMetric(BaseMetric):
                         for k, v in task_metrics.items()
                     }
                 metrics[task] = task_metrics
+                metrics_ = 'f1' if task != 'SIC' else 'r2'
+                metrics['combined_score'] += self.combined_score_weights[task] * metrics[task][metrics_]
         else:
             metrics = {task: None for task in self.tasks}  # type: ignore
+            metrics['combined_score'] = None
 
         broadcast_object_list([metrics])
 
@@ -190,18 +211,43 @@ class MultitaskIoUMetric(BaseMetric):
             logger.info(f'results are saved to {osp.dirname(self.output_dir)}')
             return OrderedDict()
 
-        metrics = {}
-        for task, task_results in results.items():
-            task_results = tuple(zip(*task_results))
-            assert len(task_results) == 4
+        task_metrics = dict()
+        task, task_results = next(iter(results.items()))
+        # for task, task_results in results.items():
+        task_results = list(zip(*task_results))
 
+        if isinstance(self.metrics[task], list): 
+            metrics_ = self.metrics[task].copy()
+        else: metrics_ = self.metrics[task]
+
+        if len(task_results) == 6:    
+            pred = torch.cat(task_results.pop(0))
+            lbl  = torch.cat(task_results.pop(0))
+            if 'r2' in metrics_:
+                # Calculate the R² score
+                task_metrics['r2'] = self.R2(pred, lbl, self.ignore_index).item()
+                # # # This is for average R2 (accross batches)
+                # # # r2_results = task_results.pop(0)
+                # # # task_metrics['r2'] = np.round(np.nanmean(torch.Tensor(r2_results).numpy()) * 100, 2)
+                if isinstance(metrics_, list): metrics_.pop(metrics_.index('r2'))
+                else: metrics_ = ''
+            if 'f1' in metrics_:
+                # Weighted F1-score
+                task_metrics['f1'] = self.f1_score(pred, lbl, self.num_classes[task], self.ignore_index).item()
+                if isinstance(metrics_, list): metrics_.pop(metrics_.index('f1'))
+                else: metrics_ = ''
+        
+        if metrics_:
+
+            assert len(task_results) == 4    
             total_area_intersect = sum(task_results[0])
             total_area_union = sum(task_results[1])
             total_area_pred_label = sum(task_results[2])
             total_area_label = sum(task_results[3])
+
             ret_metrics = self.total_area_to_metrics(
                 total_area_intersect, total_area_union, total_area_pred_label,
-                total_area_label, self.metrics, self.nan_to_num, self.beta)
+                total_area_label, metrics_, self.nan_to_num, self.beta)
 
             class_names = self.dataset_meta[f'{task}_classes']
 
@@ -210,7 +256,6 @@ class MultitaskIoUMetric(BaseMetric):
                 ret_metric: np.round(np.nanmean(ret_metric_value) * 100, 2)
                 for ret_metric, ret_metric_value in ret_metrics.items()
             })
-            task_metrics = dict()
             for key, val in ret_metrics_summary.items():
                 if key == 'aAcc':
                     task_metrics[key] = val
@@ -232,9 +277,60 @@ class MultitaskIoUMetric(BaseMetric):
             print_log(f'per class results for {task}:', logger)
             print_log('\n' + class_table_data.get_string(), logger=logger)
 
-            metrics[task] = task_metrics
+        return task_metrics
 
-        return metrics
+    @staticmethod
+    def R2(pred_label: torch.tensor, 
+           label: torch.tensor, 
+           ignore_index: int):
+        """Calculate R2-Score.
+
+        Args:
+            pred_label (torch.tensor): Prediction segmentation map
+                or predict result filename. The shape is (H, W).
+            label (torch.tensor): Ground truth segmentation map
+                or label filename. The shape is (H, W).
+            ignore_index (int): Index that will be ignored in evaluation.
+
+        Returns:
+            torch.Tensor: R2-score
+        """
+
+        mask = label != ignore_index
+        pred_label = pred_label[mask]
+        label = label[mask]
+
+        r2 = r2_score(preds=pred_label.float(), target=label.float())
+
+        return r2
+
+    @staticmethod
+    def f1_score(pred_label: torch.tensor, 
+           label: torch.tensor, 
+           num_classes: int,
+           ignore_index: int):
+        """Calculate R2-Score.
+
+        Args:
+            pred_label (torch.tensor): Prediction segmentation map
+                or predict result filename. The shape is (H, W).
+            label (torch.tensor): Ground truth segmentation map
+                or label filename. The shape is (H, W).
+            num_classes (int): Number of categories.
+            ignore_index (int): Index that will be ignored in evaluation.
+
+        Returns:
+            torch.Tensor: R2-score
+        """
+
+        mask = label != ignore_index
+        pred_label = pred_label[mask]
+        label = label[mask]
+
+        f1 = f1_score(target=label, preds=pred_label, average='weighted', 
+                      task='multiclass', num_classes=num_classes)
+
+        return f1
 
     @staticmethod
     def intersect_and_union(pred_label: torch.tensor, label: torch.tensor,
@@ -258,7 +354,7 @@ class MultitaskIoUMetric(BaseMetric):
             torch.Tensor: The ground truth histogram on all classes.
         """
 
-        mask = (label != ignore_index)
+        mask = label != ignore_index
         pred_label = pred_label[mask]
         label = label[mask]
 
