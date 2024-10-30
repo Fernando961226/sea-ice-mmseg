@@ -1,7 +1,7 @@
 '''
 No@
 '''
-_base_ = ['mae_vit-base_4xb8-coslr-30ki_ai4arctic_pt20_ft80.py']
+_base_ = ['mae_vit-base_4xb8-coslr-30ki_ai4arctic_ft80.py']
 
 # mixed precision
 optim_wrapper = dict(type='AmpOptimWrapper', loss_scale='dynamic')

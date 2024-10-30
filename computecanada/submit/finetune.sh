@@ -4,7 +4,7 @@
 #SBATCH --tasks-per-node=4
 #SBATCH --cpus-per-task=12 # change this parameter to 2,4,6,... and increase "--num_workers" accordingly to see the effect on performance
 #SBATCH --mem=200G
-#SBATCH --time=14:59:00
+#SBATCH --time=15:59:00
 #SBATCH --output=../output/%j.out
 #SBATCH --account=rrg-dclausi
 #SBATCH --mail-user=jnoat92@gmail.com
@@ -45,12 +45,15 @@ echo "Finetune Config file: $2"
                                 # --cfg-options   model.backbone.init_cfg.checkpoint=${CHECKPOINT} \
                                 #                 model.backbone.init_cfg.type='Pretrained' \
                                 #                 model.backbone.init_cfg.prefix='backbone.'
-# # srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $2 --resume --launcher slurm 
+# # srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $2 --resume --launcher slurm
 srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $2 --launcher slurm
 
 # Extract the base name without extension
 base_name_mmseg=$(basename "$2" .py)
-CHECKPOINT_mmseg=$(cat work_dirs/$base_name_mmseg/last_checkpoint)
+# CHECKPOINT_mmseg=$(cat work_dirs/$base_name_mmseg/last_checkpoint)
+CHECKPOINT_mmseg=$(find work_dirs/$base_name_mmseg/ -type f -name '*best_combined_score*' | head -n 1)
 echo "mmseg checkpoint $CHECKPOINT_mmseg"
 
-python tools/test.py $2 $CHECKPOINT_mmseg --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/
+srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/test.py $2 $CHECKPOINT_mmseg \
+                                --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/    \
+                                --launcher slurm

@@ -285,7 +285,7 @@ test_evaluator = val_evaluator
 optim_wrapper = dict(
     _delete_=True,
     type='OptimWrapper',
-    optimizer=dict(type='AdamW', lr=1e-4 * 4, betas=(0.9, 0.999), weight_decay=0.01),
+    optimizer=dict(type='AdamW', lr=1e-4, betas=(0.9, 0.999), weight_decay=0.01),
     paramwise_cfg=dict(
         custom_keys={
             'ln': dict(decay_mult=0.0),
@@ -323,16 +323,16 @@ metrics = {'SIC': 'r2', 'SOD': 'f1', 'FLOE': 'f1'}
 num_classes = {'SIC': 12, 'SOD': 7, 'FLOE': 8} # add 1 class extra for visualization to work correctly, put [11,6,7] in other places
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
-    logger=dict(type='LoggerHook', interval=val_interval//10, log_metric_by_epoch=False),
+    logger=dict(type='AI4arcticLoggerHook', interval=val_interval//10, log_metric_by_epoch=False),
     param_scheduler=dict(type='ParamSchedulerHook'),
     checkpoint=dict(type='CheckpointHook', 
                     save_best="combined_score", rule="greater",
                     by_epoch=False, 
                     interval=val_interval, 
-                    max_keep_ckpts=3),
+                    max_keep_ckpts=2),
     early_stopping=dict(type='EarlyStoppingHookMain', 
                     monitor="combined_score", rule="greater",
-                    min_delta=0.0, patience=10),
+                    min_delta=0.0, patience=15),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     visualization=dict(type='SegAI4ArcticVisualizationHook', 
                        tasks=GT_type, num_classes=num_classes, 
@@ -351,7 +351,7 @@ wandb_config = dict(type='WandbVisBackend',
                          group="ft_{:03d}".format(int(file_train.split('.')[0].split('_')[-1])),
                          name='{{fileBasenameNoExtension}}',),
                      #  name='filename',),
-                     define_metric_cfg=None,
+                     define_metric_cfg={'val/combined_score': 'max'},
                      commit=True,
                      log_code_name=None,
                      watch_kwargs=None)
@@ -371,7 +371,8 @@ custom_imports = dict(
              
              'mmseg.engine.hooks.ai4arctic_visualization_hook',
              'mmseg.engine.hooks.early_stopping_hook_main',
-             'mmseg.engine.hooks.ai4arctic_runtime_hook'],
+             'mmseg.engine.hooks.ai4arctic_runtime_hook',
+             'mmseg.engine.hooks.ai4arctic_logger_hook'],
     allow_failed_imports=False)
 
 # randomness

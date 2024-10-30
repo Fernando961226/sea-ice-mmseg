@@ -23,4 +23,9 @@ class EarlyStoppingHookMain(EarlyStoppingHook):
 
         if not is_main_process(): return
         super().after_val_epoch(runner, metrics)
+        # if self.wait_count == 0:
+        #     runner.visualizer._vis_backends['WandbVisBackend']._wandb.summary['val/combined_score'] = metrics['combined_score']
+        #     runner.visualizer._vis_backends['WandbVisBackend']._wandb.summary['val/SIC.r2'] = metrics['SIC']['r2']
+        #     runner.visualizer._vis_backends['WandbVisBackend']._wandb.summary['val/SOD.f1'] = metrics['SOD']['f1']
+        #     runner.visualizer._vis_backends['WandbVisBackend']._wandb.summary['val/FLOE.f1'] = metrics['FLOE']['f1']
 
