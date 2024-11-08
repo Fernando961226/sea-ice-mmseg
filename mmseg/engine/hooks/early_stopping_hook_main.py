@@ -5,10 +5,9 @@ Oct 21st, 2024
 
 from mmengine.registry import HOOKS
 from mmengine.hooks import EarlyStoppingHook
-from mmengine.dist import is_main_process
+from mmengine.dist import is_main_process, broadcast_object_list
 
-
-@HOOKS.register_module()
+@HOOKS.register_module()  
 class EarlyStoppingHookMain(EarlyStoppingHook):
 
     def after_val_epoch(self, runner, metrics):
@@ -23,9 +22,10 @@ class EarlyStoppingHookMain(EarlyStoppingHook):
 
         if not is_main_process(): return
         super().after_val_epoch(runner, metrics)
-        # if self.wait_count == 0:
-        #     runner.visualizer._vis_backends['WandbVisBackend']._wandb.summary['val/combined_score'] = metrics['combined_score']
-        #     runner.visualizer._vis_backends['WandbVisBackend']._wandb.summary['val/SIC.r2'] = metrics['SIC']['r2']
-        #     runner.visualizer._vis_backends['WandbVisBackend']._wandb.summary['val/SOD.f1'] = metrics['SOD']['f1']
-        #     runner.visualizer._vis_backends['WandbVisBackend']._wandb.summary['val/FLOE.f1'] = metrics['FLOE']['f1']
-
+        if runner.train_loop.stop_training:
+            # Broadcast the stop flag
+            object_list = [runner.train_loop.stop_training]
+            broadcast_object_list(object_list, src=0)
+            stop_flag = object_list[0]
+            # Update runner in all processes based on the stop_flag
+            runner.train_loop.stop_training = stop_flag
