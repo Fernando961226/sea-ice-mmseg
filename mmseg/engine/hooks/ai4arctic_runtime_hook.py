@@ -49,13 +49,13 @@ class AI4arcticRuntimeInfoHook(RuntimeInfoHook):
         if metrics is not None:
             for key, value in metrics.items():
                 if value is None: continue
-                if not _is_scalar(value):
-                    if key == 'SIC':
-                        value = value['r2']
-                        key += '.r2'
-                    elif key in ['SOD', 'FLOE']:
-                        value = value['f1']
-                        key += '.f1'
+                # if not _is_scalar(value):
+                #     if key == 'SIC':
+                #         value = value['r2']
+                #         key += '.r2'
+                #     elif key in ['SOD', 'FLOE']:
+                #         value = value['f1']
+                #         key += '.f1'
                 if _is_scalar(value):
                     runner.message_hub.update_scalar(f'val/{key}', value)
                 else:

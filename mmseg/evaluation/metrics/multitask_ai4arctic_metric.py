@@ -166,11 +166,11 @@ class MultitaskAi4arcticMetric(BaseMetric):
                 results[task] = collect_results(
                     self.results[task], size, self.collect_device)
 
+        metrics = {}
         if is_main_process():
             # cast all tensors in results list to cpu
             results = {task: _to_cpu(task_results)
                         for task, task_results in results.items()}
-            metrics = {}
             metrics['combined_score'] = 0
             for task in self.tasks:
                 task_metrics = self.compute_metrics(
@@ -181,12 +181,20 @@ class MultitaskAi4arcticMetric(BaseMetric):
                         '/'.join((self.prefix, k)): v
                         for k, v in task_metrics.items()
                     }
-                metrics[task] = task_metrics
-                metrics_ = 'f1' if task != 'SIC' else 'r2'
-                metrics['combined_score'] += self.combined_score_weights[task] * metrics[task][metrics_]
+
+                metric_ = 'f1' if task != 'SIC' else 'r2'
+                metrics['combined_score'] += self.combined_score_weights[task] * task_metrics[metric_]
+                # metrics[task] = task_metrics
+                for k, v in task_metrics.items():
+                    metrics[task + '.' + k] = v
         else:
-            metrics = {task: None for task in self.tasks}  # type: ignore
+            # Make sure these keys exist in metrics dict so 
+            # that saving best checkpoint work properly
             metrics['combined_score'] = None
+            metrics['SIC.r2'] = None
+            metrics['SOD.f1'] = None
+            metrics['FLOE.f1'] = None
+            
 
         broadcast_object_list([metrics])
 

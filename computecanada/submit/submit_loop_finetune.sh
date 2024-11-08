@@ -14,7 +14,7 @@ selfsup_configs=(
 # configs/selfsup/ai4arctic/pretrain_80/mae_vit-large-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80.py
 
 # huge
-# configs/selfsup/ai4arctic/pretrain_20/mae_vit-huge-p16_4xb8-amp-coslr-50ki_ai4arctic_pt20.py
+configs/selfsup/ai4arctic/pretrain_20/mae_vit-huge-p16_4xb8-amp-coslr-50ki_ai4arctic_pt20.py
 # configs/selfsup/ai4arctic/pretrain_40/mae_vit-huge-p16_4xb8-amp-coslr-50ki_ai4arctic_pt40.py
 # configs/selfsup/ai4arctic/pretrain_60/mae_vit-huge-p16_4xb8-amp-coslr-50ki_ai4arctic_pt60.py
 # configs/selfsup/ai4arctic/pretrain_80/mae_vit-huge-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80.py
@@ -26,34 +26,34 @@ fintune_configs=(
 # configs/multi_task_ai4arctic/unet_ai4arctic_patches_ds5X_pt_80_ft_20_2.py
 
 # base
-# configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft100.   #  OK
-# configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft80.py    #  test
-configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft60.py
-# configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft40.py    #  test
-# configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft20.py    #  test
+# configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft100.
+# configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft80.py
+# configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft60.py
+# configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft40.py
+# configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft20.py
 
 # large
-# configs/multi_task_ai4arctic/vit/mae_vit-large_4xb8-amp-coslr-30ki_ai4arctic_ft100.py      #  OK
-# configs/multi_task_ai4arctic/vit/mae_vit-large_4xb8-amp-coslr-30ki_ai4arctic_ft80.py    #  test
-# configs/multi_task_ai4arctic/vit/mae_vit-large_4xb8-amp-coslr-30ki_ai4arctic_ft60.py    #  test
-# configs/multi_task_ai4arctic/vit/mae_vit-large_4xb8-amp-coslr-30ki_ai4arctic_ft40.py      #  OK
-# configs/multi_task_ai4arctic/vit/mae_vit-large_4xb8-amp-coslr-30ki_ai4arctic_ft20.py    #  test
+# configs/multi_task_ai4arctic/vit/mae_vit-large_4xb8-amp-coslr-30ki_ai4arctic_ft100.py   
+# configs/multi_task_ai4arctic/vit/mae_vit-large_4xb8-amp-coslr-30ki_ai4arctic_ft80.py
+# configs/multi_task_ai4arctic/vit/mae_vit-large_4xb8-amp-coslr-30ki_ai4arctic_ft60.py
+# configs/multi_task_ai4arctic/vit/mae_vit-large_4xb8-amp-coslr-30ki_ai4arctic_ft40.py   
+# configs/multi_task_ai4arctic/vit/mae_vit-large_4xb8-amp-coslr-30ki_ai4arctic_ft20.py
 
 # huge
-# configs/multi_task_ai4arctic/vit/mae_vit-huge_4xb8-amp-coslr-30ki_ai4arctic_ft100.py    #  OK
-# configs/multi_task_ai4arctic/vit/mae_vit-huge_4xb8-amp-coslr-30ki_ai4arctic_ft80.py    #  test
-# configs/multi_task_ai4arctic/vit/mae_vit-huge_4xb8-amp-coslr-30ki_ai4arctic_ft60.py    #  test
-# configs/multi_task_ai4arctic/vit/mae_vit-huge_4xb8-amp-coslr-30ki_ai4arctic_ft40.py    #  test
-# configs/multi_task_ai4arctic/vit/mae_vit-huge_4xb8-amp-coslr-30ki_ai4arctic_ft20.py
+# configs/multi_task_ai4arctic/vit/mae_vit-huge_4xb8-amp-coslr-30ki_ai4arctic_ft100.py 
+# configs/multi_task_ai4arctic/vit/mae_vit-huge_4xb8-amp-coslr-30ki_ai4arctic_ft80.py    # down 5
+# configs/multi_task_ai4arctic/vit/mae_vit-huge_4xb8-amp-coslr-30ki_ai4arctic_ft60.py    # down 4
+configs/multi_task_ai4arctic/vit/mae_vit-huge_4xb8-amp-coslr-30ki_ai4arctic_ft40.py    # down 3
+# configs/multi_task_ai4arctic/vit/mae_vit-huge_4xb8-amp-coslr-30ki_ai4arctic_ft20.py    # down 2
 )
 
-for i in "${!fintune_configs[@]}"; do
-   sbatch finetune.sh $i ${fintune_configs[i]}
-   # sbatch finetune.sh ${selfsup_configs[i]} ${fintune_configs[i]}
-   # echo  ${selfsup_configs[i]} ${fintune_configs[i]}
-   echo "task successfully submitted" 
-   sleep 2
-done
+# for i in "${!fintune_configs[@]}"; do
+#    sbatch finetune.sh $i ${fintune_configs[i]}
+#    # sbatch finetune.sh ${selfsup_configs[i]} ${fintune_configs[i]}
+#    # echo  ${selfsup_configs[i]} ${fintune_configs[i]}
+#    echo "task successfully submitted" 
+#    sleep 2
+# done
 
 # for i in "${!selfsup_configs[@]}"; do
 #    for j in "${!fintune_configs[@]}"; do
@@ -61,3 +61,11 @@ done
 #       echo "task successfully submitted" 
 #       sleep 2
 # done
+
+for i in "${!selfsup_configs[@]}"; do
+   for j in "${!fintune_configs[@]}"; do
+      sbatch finetune.sh ${selfsup_configs[i]} ${fintune_configs[j]}
+      echo "task successfully submitted" 
+      sleep 2
+   done
+done
