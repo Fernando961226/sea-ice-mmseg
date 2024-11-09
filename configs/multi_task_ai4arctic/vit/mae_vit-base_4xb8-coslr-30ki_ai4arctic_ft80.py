@@ -134,7 +134,7 @@ val_pipeline = [
                                           # 'dws_factor' is the only non-default parameter
 ]
 val_dataloader = dict(batch_size=1,
-                      num_workers=4,
+                      num_workers=1,
                       persistent_workers=True,
                       sampler=dict(type='DefaultSampler', shuffle=False),
                       dataset=dict(type=dataset_type_val,
@@ -154,7 +154,7 @@ test_pipeline = [
                                             # I need it in the visualization hook
 ]
 test_dataloader = dict(batch_size=1,
-                      num_workers=4,
+                      num_workers=1,
                       persistent_workers=True,
                       sampler=dict(type='DefaultSampler', shuffle=False),
                       dataset=dict(type=dataset_type_val,
