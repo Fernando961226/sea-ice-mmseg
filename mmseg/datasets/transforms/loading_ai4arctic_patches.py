@@ -217,7 +217,7 @@ class PreLoadImageandSegFromNetCDFFile(BaseTransform):
             # ----------- DOWN SCALE SETUP ON SAR CHANNELS
             rows_down, cols_down = rows, cols
             if self.downsample_factor == -1:
-                downsample_factor = np.random.randint(2, 10)
+                downsample_factor = np.random.randint(3, 10)
             self.down_factor_perscene[filename] = downsample_factor
 
             if downsample_factor > 1:
