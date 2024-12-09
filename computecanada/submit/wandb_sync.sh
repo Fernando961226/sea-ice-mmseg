@@ -1,12 +1,14 @@
 set -e
 
-mapfile -t array < <(find /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs -type d -name "vis_data")
+mapfile -t array < <(find /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs/from_20k_ckpt -type d -name "vis_data")
 
 module purge
 module load  StdEnv/2020 python/3.10.2
 module load gcc/9.3.0 opencv/4.8.0 cuda/11.7
 echo "loading module done"
 source ~/env_mmselfsup/bin/activate
+
+export WANDB_SERVICE_WAIT=60
 
 for i in "${!array[@]}"; do
 
