@@ -6,7 +6,7 @@
 #SBATCH --mem=200G
 #SBATCH --time=15:59:00
 #SBATCH --output=../output/%j.out
-#SBATCH --account=def-dclausi
+#SBATCH --account=rrg-dclausi
 #SBATCH --mail-user=jnoat92@gmail.com
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
@@ -42,13 +42,13 @@ cd /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg
 echo "Finetune Config file: $2"
 
 # # CHECKPOINT=(/home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs/mae_ai4arctic_ds2_pt_80_ft_20/iter_40000.pth)
-srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $2 \
-                                --cfg-options   model.backbone.init_cfg.checkpoint=${CHECKPOINT} \
-                                                model.backbone.init_cfg.type='Pretrained' \
-                                                model.backbone.init_cfg.prefix='backbone.' \
-                                --launcher slurm 
+# srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $2 \
+#                                 --cfg-options   model.backbone.init_cfg.checkpoint=${CHECKPOINT} \
+#                                                 model.backbone.init_cfg.type='Pretrained' \
+#                                                 model.backbone.init_cfg.prefix='backbone.' \
+#                                 --launcher slurm 
 # srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $2 --resume --launcher slurm
-# srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $2 --launcher slurm
+srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $2 --launcher slurm
 
 # Extract the base name without extension
 base_name_mmseg=$(basename "$2" .py)
