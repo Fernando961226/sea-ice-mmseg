@@ -330,7 +330,7 @@ default_hooks = dict(
                     save_best=["combined_score", "SIC.r2", "SOD.f1", "FLOE.f1"], 
                     rule="greater",
                     by_epoch=False, 
-                    interval=-1, save_last=False,
+                    interval=-1, save_last=True,
                     max_keep_ckpts=1),
     # early_stopping=dict(type='EarlyStoppingHookMain', 
     #                 monitor="combined_score", rule="greater",
