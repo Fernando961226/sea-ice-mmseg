@@ -14,7 +14,8 @@ from mmseg.registry import RUNNERS
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')
     parser.add_argument('config', help='train config file path')
-    # parser.add_argument('--config', default = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-coslr-30ki_ai4arctic_ft80.py', help='train config file path')
+    # parser.add_argument('--config', default = '/home/jnoat92/projects/def-dclausi/ai4arctic/sea-ice-mmseg/configs/multi_task_ai4arctic/vit/mae_vit-base_4xb8-coslr-30ki_ai4arctic_ft80.py', help='train config file path')
+    # parser.add_argument('--config', default = '/home/jnoat92/projects/def-dclausi/ai4arctic/sea-ice-mmseg/configs/multi_task_ai4arctic/unet_ai4arctic_patches_ds5X_pt_80_ft_20_2.py', help='train config file path')
 
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
