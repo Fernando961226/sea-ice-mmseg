@@ -64,6 +64,7 @@ class MAEViT_CCH(VisionTransformer):
                  patch_cfg: dict = dict(),
                  layer_cfgs: dict = dict(),
                  mask_ratio: float = 0.75,
+                 frozen_stages: int = -1,
                  init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
         super().__init__(
             arch=arch,
@@ -75,6 +76,7 @@ class MAEViT_CCH(VisionTransformer):
             drop_path_rate=drop_path_rate,
             norm_cfg=norm_cfg,
             final_norm=final_norm,
+            frozen_stages=frozen_stages,
             output_cls_token=output_cls_token,
             interpolate_mode=interpolate_mode,
             patch_cfg=patch_cfg,
@@ -85,6 +87,13 @@ class MAEViT_CCH(VisionTransformer):
         self.pos_embed.requires_grad = False
         self.mask_ratio = mask_ratio
         self.num_patches = self.patch_resolution[0] * self.patch_resolution[1]
+
+        # freeze stages only when self.frozen_stages > 0
+        if self.frozen_stages > 0:
+            if self.frozen_stages > self.num_layers:
+                self.frozen_stages = self.num_layers 
+            self._freeze_stages()
+
 
     def init_weights(self) -> None:
         """Initialize position embedding, patch embedding and cls token."""
