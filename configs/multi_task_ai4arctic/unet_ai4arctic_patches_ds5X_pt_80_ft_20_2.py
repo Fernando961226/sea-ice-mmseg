@@ -221,7 +221,7 @@ model = dict(
             norm_cfg=norm_cfg,
             align_corners=False,
             loss_decode=dict(
-                # type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+                # type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, avg_non_ignore=True)),
                 type='MSELossWithIgnoreIndex', loss_weight=1.0)),
         dict(
             type='FCNHead',
@@ -237,7 +237,7 @@ model = dict(
             norm_cfg=norm_cfg,
             align_corners=False,
             loss_decode=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=3.0)),
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=3.0, avg_non_ignore=True)),
         dict(
             type='FCNHead',
             task='FLOE',
@@ -252,7 +252,7 @@ model = dict(
             norm_cfg=norm_cfg,
             align_corners=False,
             loss_decode=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=3.0)),
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=3.0, avg_non_ignore=True)),
     ],
     auxiliary_head=None,
     # model training and testing settings
@@ -276,7 +276,7 @@ optim_wrapper = dict(
     optimizer=dict(type='SGD', lr=0.001, weight_decay=0.01, momentum=0.9))
 
 n_iterations = 150000
-val_interval = 1000
+val_interval = 500
 train_cfg = dict(
     type='IterBasedTrainLoop', max_iters=n_iterations, val_interval=val_interval)
 
@@ -294,7 +294,7 @@ metrics = {'SIC': 'r2', 'SOD': 'f1', 'FLOE': 'f1'}
 num_classes = {'SIC': 12, 'SOD': 7, 'FLOE': 8} # add 1 class extra for visualization to work correctly, put [11,6,7] in other places
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
-    logger=dict(type='AI4arcticLoggerHook', interval=val_interval//10, log_metric_by_epoch=False),
+    logger=dict(type='AI4arcticLoggerHook', interval=val_interval//5, log_metric_by_epoch=False),
     param_scheduler=dict(type='ParamSchedulerHook'),
     checkpoint=dict(type='CheckpointHook', 
                     # save_best="combined_score", 
