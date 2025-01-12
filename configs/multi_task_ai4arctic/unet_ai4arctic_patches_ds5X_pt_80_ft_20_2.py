@@ -302,7 +302,7 @@ default_hooks = dict(
                     rule="greater",
                     by_epoch=False, 
                     interval=-1, save_last=True,
-                    max_keep_ckpts=1),
+                    max_keep_ckpts=2),
     # early_stopping=dict(type='EarlyStoppingHookMain', 
     #                 monitor="combined_score", rule="greater",
     #                 min_delta=0.0, patience=15),
