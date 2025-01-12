@@ -1,6 +1,6 @@
 set -e
 
-mapfile -t array < <(find /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs/from_04k_ckpt -type d -name "vis_data")
+mapfile -t array < <(find /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs/from_02k_ckpt/2_stages_finetune/end_to_end_avg_non_ignore_False -type d -name "vis_data")
 
 module purge
 module load  StdEnv/2020 python/3.10.2
@@ -14,13 +14,17 @@ for i in "${!array[@]}"; do
 
    if [[ "${array[i]}" != *"mae_ai4arctic_ds2_pt_80_ft_20"* ]]; then 
       cd ${array[i]}
-      echo "wandb sync --sync-all " ${array[i]}
-      # wandb sync --sync-all ${array[i]}
-      wandb sync --sync-all wandb/
-      sleep 1
-   else
-      echo ${array[i]}
+      
+      if [ -d "wandb/" ]; then
+         echo "wandb sync --sync-all " ${array[i]}
+         # wandb sync --sync-all ${array[i]}
+         wandb sync --sync-all wandb/
+      else
+         echo "No wandb info at " ${array[i]}
+      fi
    fi
+   sleep 1
 done
 
 deactivate
+

@@ -41,5 +41,7 @@ CHECKPOINT=$(cat work_dirs/selfsup/$base_name/last_checkpoint)
 echo "mmselfsup Checkpoint $CHECKPOINT"
 
 # Reconstruct sample Image
-srun --ntasks=1 --gres=gpu:1 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/analysis_tools/visualize_reconstruction_ai4arctic.py $1 --checkpoint $CHECKPOINT --img-path "/home/jnoat92/scratch/dataset/ai4arctic/down_scale_9X/S1A_EW_GRDM_1SDH_20180814T120158_20180814T120258_023242_0286BE_36EF_icechart_cis_SGRDIHA_20180814T1201Z_pl_a/00007.pkl" --out-file "work_dirs/selfsup/$base_name/visual_reconstruction"
+srun --ntasks=1 --gres=gpu:1 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/analysis_tools/visualize_reconstruction_ai4arctic.py $1 --checkpoint $CHECKPOINT --img-path "/home/jnoat92/scratch/dataset/ai4arctic/down_scale_9X/S1A_EW_GRDM_1SDH_20200424T101936_20200424T102036_032268_03BBA9_1CA8_icechart_cis_SGRDINFLD_20200424T1020Z_pl_a/00005.pkl" --out-file "work_dirs/selfsup/$base_name/visual_reconstruction"
 
+# cd /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmselfsup
+# python tools/analysis_tools/visualize_reconstruction_ai4arctic.py configs/selfsup/ai4arctic/pretrain_80/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80.py --checkpoint work_dirs/selfsup/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80/iter_30000.pth --img-path "/home/jnoat92/scratch/dataset/ai4arctic/down_scale_9X/S1A_EW_GRDM_1SDH_20200424T101936_20200424T102036_032268_03BBA9_1CA8_icechart_cis_SGRDINFLD_20200424T1020Z_pl_a/00005.pkl" --out-file "work_dirs/selfsup/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80/visual_reconstruction"
