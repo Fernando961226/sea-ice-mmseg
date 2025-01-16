@@ -212,7 +212,8 @@ model = dict(
     #         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, avg_non_ignore=False)),
     decode_head=[
         dict(
-            type='UPerHead',
+            # type='UPerHead',
+            type='UPerHead_regression',
             task='SIC',
             in_channels=decode_in_channels[arch],
             in_index=[0, 1, 2, 3],
@@ -223,7 +224,8 @@ model = dict(
             norm_cfg=norm_cfg,
             align_corners=False,
             loss_decode=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, avg_non_ignore=False)),
+                # type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0, avg_non_ignore=False)),
+                type='MSELossWithIgnoreIndex', loss_weight=1.0)),
         dict(
             type='UPerHead',
             task='SOD',
@@ -368,6 +370,7 @@ custom_imports = dict(
              
              'mmseg.models.segmentors.mutitask_encoder_decoder',
              'mmseg.models.backbones.custom_vit_bckbn',
+             'mmseg.models.losses.mse_loss',
              
              'mmseg.evaluation.metrics.multitask_ai4arctic_metric',
              
