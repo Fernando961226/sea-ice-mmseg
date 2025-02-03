@@ -32,8 +32,8 @@ echo "starting pretrain ..."
 cd /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmselfsup
 
 echo "Config file: $1"
-# srun --ntasks=4 --gres=gpu:4 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm --resume #--cfg-options
-srun --ntasks=4 --gres=gpu:4 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm
+srun --ntasks=4 --gres=gpu:4 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm --resume #--cfg-options
+# srun --ntasks=4 --gres=gpu:4 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm
 
 # Extract the base name without extension
 base_name=$(basename "$1" .py)
