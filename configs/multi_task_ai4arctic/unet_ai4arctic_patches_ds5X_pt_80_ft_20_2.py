@@ -21,20 +21,20 @@ combined_score_weights = [2/5, 2/5, 1/5]
 dataset_type_train = 'AI4ArcticPatches'
 dataset_type_val = 'AI4Arctic'
 
-data_root_train_nc = '/home/jnoat92/projects/def-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3'
-gt_root_train = '/home/jnoat92/projects/def-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3_segmaps'
-data_root_test_nc = '/home/jnoat92/projects/def-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3'
-gt_root_test = '/home/jnoat92/projects/def-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3_segmaps'
+data_root_train_nc = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3'
+gt_root_train = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_train_v3_segmaps'
+data_root_test_nc = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3'
+gt_root_test = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/ai4arctic_raw_test_v3_segmaps'
 data_root_patches = '/home/jnoat92/scratch/dataset/ai4arctic/'
 
-file_train = '/home/jnoat92/projects/def-dclausi/ai4arctic/dataset/data_split_setup/train_100.txt'
-file_val = '/home/jnoat92/projects/def-dclausi/ai4arctic/dataset/data_split_setup/val_file.txt'
-file_test = '/home/jnoat92/projects/def-dclausi/ai4arctic/dataset/data_split_setup/test_file.txt'
+file_train = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/data_split_setup/train_100.txt'
+file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/data_split_setup/val_file.txt'
+file_test = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/data_split_setup/test_file.txt'
 
 # # small data to test
 # data_root_test_nc = data_root_train_nc
 # gt_root_test = gt_root_train
-# file_test = '/home/jnoat92/projects/def-dclausi/ai4arctic/dataset/data_split_setup/t_1.txt'
+# file_test = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/data_split_setup/t_1.txt'
 # file_train = file_test; file_val = file_test
 
 # load normalization params
