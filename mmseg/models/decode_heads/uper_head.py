@@ -144,6 +144,7 @@ class UPerHead_regression(UPerHead):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.conv_seg = nn.Linear(self.channels, 1)
+        self.out_channels = 1
 
     def forward(self, inputs):
         """Forward function."""
