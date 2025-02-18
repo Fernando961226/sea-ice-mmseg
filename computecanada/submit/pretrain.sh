@@ -4,7 +4,7 @@
 #SBATCH --tasks-per-node=4
 #SBATCH --cpus-per-task=12 # change this parameter to 2,4,6,... and increase "--num_workers" accordingly to see the effect on performance
 #SBATCH --mem=200G
-#SBATCH --time=09:59:00
+#SBATCH --time=09:59:00             # 10hrs for vit-base
 #SBATCH --output=../output/%j.out
 #SBATCH --account=rrg-dclausi
 #SBATCH --mail-user=jnoat92@gmail.com
@@ -32,8 +32,8 @@ echo "starting pretrain ..."
 cd /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmselfsup
 
 echo "Config file: $1"
-srun --ntasks=4 --gres=gpu:4 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm --resume #--cfg-options
-# srun --ntasks=4 --gres=gpu:4 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm
+# srun --ntasks=4 --gres=gpu:4 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm --resume #--cfg-options
+srun --ntasks=4 --gres=gpu:4 --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $1 --launcher slurm
 
 # Extract the base name without extension
 base_name=$(basename "$1" .py)

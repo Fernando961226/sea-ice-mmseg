@@ -29,10 +29,10 @@ export WANDB_MODE=offline
 export WANDB_DATA_DIR='/home/jnoat92/scratch/wandb'
 export WANDB_SERVICE_WAIT=60
 
-cd /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmselfsup
-echo "Pretrain Config file: $1"
-# Extract the base name without extension
-base_name=$(basename "$1" .py)
+# cd /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmselfsup
+# echo "Pretrain Config file: $1"
+# # Extract the base name without extension
+# base_name=$(basename "$1" .py)
 # MAE_CHECKPOINT=$(cat work_dirs/selfsup/$base_name/last_checkpoint)
 # echo "mmselfsup Checkpoint $MAE_CHECKPOINT"
 
@@ -57,7 +57,7 @@ echo "Finetune Config file: $2"
 #                                                 model.init_cfg.type='Pretrained' \
 #                                 --launcher slurm
 
-# FINETUNE THE WHOLE NETWORK WITHOUT ALIGNING ENCODER AND DECODER
+# # FINETUNE THE WHOLE NETWORK WITHOUT ALIGNING ENCODER AND DECODER
 # srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/train.py $2 \
 #                                 --cfg-options   model.backbone.init_cfg.checkpoint=${MAE_CHECKPOINT} \
 #                                                 model.backbone.init_cfg.type='Pretrained' \
@@ -75,20 +75,20 @@ srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python too
                                 --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/    \
                                 --launcher slurm
 
-CHECKPOINT_mmseg=$(find work_dirs/$base_name_mmseg/ -type f -name '*best_SIC*' | head -n 1)
-echo "mmseg checkpoint $CHECKPOINT_mmseg"
-srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/test.py $2 $CHECKPOINT_mmseg \
-                                --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/    \
-                                --launcher slurm
+# CHECKPOINT_mmseg=$(find work_dirs/$base_name_mmseg/ -type f -name '*best_SIC*' | head -n 1)
+# echo "mmseg checkpoint $CHECKPOINT_mmseg"
+# srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/test.py $2 $CHECKPOINT_mmseg \
+#                                 --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/    \
+#                                 --launcher slurm
 
-CHECKPOINT_mmseg=$(find work_dirs/$base_name_mmseg/ -type f -name '*best_SOD*' | head -n 1)
-echo "mmseg checkpoint $CHECKPOINT_mmseg"
-srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/test.py $2 $CHECKPOINT_mmseg \
-                                --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/    \
-                                --launcher slurm
+# CHECKPOINT_mmseg=$(find work_dirs/$base_name_mmseg/ -type f -name '*best_SOD*' | head -n 1)
+# echo "mmseg checkpoint $CHECKPOINT_mmseg"
+# srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/test.py $2 $CHECKPOINT_mmseg \
+#                                 --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/    \
+#                                 --launcher slurm
 
-CHECKPOINT_mmseg=$(find work_dirs/$base_name_mmseg/ -type f -name '*best_FLOE*' | head -n 1)
-echo "mmseg checkpoint $CHECKPOINT_mmseg"
-srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/test.py $2 $CHECKPOINT_mmseg \
-                                --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/    \
-                                --launcher slurm
+# CHECKPOINT_mmseg=$(find work_dirs/$base_name_mmseg/ -type f -name '*best_FLOE*' | head -n 1)
+# echo "mmseg checkpoint $CHECKPOINT_mmseg"
+# srun --ntasks=4 --gres=gpu:4  --kill-on-bad-exit=1 --cpus-per-task=12 python tools/test.py $2 $CHECKPOINT_mmseg \
+#                                 --out work_dirs/$base_name_mmseg/ --show-dir work_dirs/$base_name_mmseg/    \
+#                                 --launcher slurm
