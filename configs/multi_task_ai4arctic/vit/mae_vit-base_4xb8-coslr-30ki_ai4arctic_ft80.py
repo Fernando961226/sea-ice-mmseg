@@ -77,18 +77,18 @@ channels = [
     # 'sar_grid_longitude',
     # 'distance_map',
 
-    # # # -- AMSR2 channels -- #
-    # 'btemp_6_9h', 'btemp_6_9v',
-    # 'btemp_7_3h', 'btemp_7_3v',
-    # 'btemp_10_7h', 'btemp_10_7v',
-    # 'btemp_18_7h', 'btemp_18_7v',
-    # 'btemp_23_8h', 'btemp_23_8v',
-    # 'btemp_36_5h', 'btemp_36_5v',
-    # 'btemp_89_0h', 'btemp_89_0v',
+    # -- AMSR2 channels -- #
+    'btemp_6_9h', 'btemp_6_9v',
+    'btemp_7_3h', 'btemp_7_3v',
+    'btemp_10_7h', 'btemp_10_7v',
+    'btemp_18_7h', 'btemp_18_7v',
+    'btemp_23_8h', 'btemp_23_8v',
+    'btemp_36_5h', 'btemp_36_5v',
+    'btemp_89_0h', 'btemp_89_0v',
 
-    # # # -- Environmental variables -- #
-    # 'u10m_rotated', 'v10m_rotated',
-    # 't2m', 'skt', 'tcwv', 'tclw',
+    # # -- Environmental variables -- #
+    'u10m_rotated', 'v10m_rotated',
+    't2m', 'skt', 'tcwv', 'tclw',
 
     # # -- acquisition time
     # 'month', 'day'
@@ -351,7 +351,7 @@ log_processor = dict(type='LogProcessor', log_with_hierarchy=True)  # log_with_h
 wandb_config = dict(type='WandbVisBackend',
                      init_kwargs=dict(
                          entity='jnoat92',
-                         project='MAE-downstream-HH-HV',
+                         project='Downstream-HH-HV-PM-EV',
                          group="ft_{:03d}".format(int(file_train.split('.')[0].split('_')[-1])),
                          name='{{fileBasenameNoExtension}}',),
                      #  name='filename',),
