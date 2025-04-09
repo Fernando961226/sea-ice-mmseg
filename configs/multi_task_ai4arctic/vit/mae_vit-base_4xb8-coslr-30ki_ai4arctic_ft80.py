@@ -127,7 +127,7 @@ train_dataloader = dict(batch_size=8,
 val_pipeline = [
     dict(type='PreLoadImageandSegFromNetCDFFile', data_root=data_root_train_nc, gt_root=gt_root_train, 
          ann_file=file_val, channels=channels, mean=mean, std=std, to_float32=True, nan=255, 
-         downsample_factor=-1, with_seg=True, GT_type=GT_type),
+         downsample_factor=downsample_factor_test, with_seg=True, GT_type=GT_type),
     dict(type='PackSegInputs', meta_keys=('img_path', 'seg_map_path', 'ori_shape',
                                           'img_shape', 'pad_shape', 'scale_factor', 'flip',
                                           'flip_direction', 'reduce_zero_label', 'dws_factor')) 
