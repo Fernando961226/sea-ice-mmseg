@@ -43,5 +43,8 @@ pip install -U openmim && mim install -e .
 cd ../sea-ice-mmseg/
 pip install -v -e .
 
+cd ../sea-ice-mmpretrain/
+pip install -U openmim && mim install -e .
+
 # _dir=$(pwd)
 # cd $_dir
