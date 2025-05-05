@@ -1,26 +1,41 @@
-'''
-No@
-'''
 _base_ = [
-    '../vit/mae_vit-base_4xb8-coslr-30ki_ai4arctic_ft80.py'
+    '../../vit/mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft40.py'
 ]
+
+# # ==================== SMALL DATASET SCRIPT
+# data_root_test_nc = _base_.data_root_train_nc
+# file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/data_split_setup/t_1.txt'
+# file_train = file_val; file_test = file_val
+
+# concat_dataset = _base_.concat_dataset
+# train_dataloader = _base_.train_dataloader
+# for i in range(len(concat_dataset.datasets)):
+#     concat_dataset.datasets[i].ann_file = file_train
+# train_dataloader.dataset = concat_dataset
+
+# val_pipeline = _base_.val_pipeline
+# val_pipeline[0].ann_file=file_val
+# val_dataloader = _base_.val_dataloader
+# val_dataloader.dataset.ann_file = file_val
+# val_dataloader.dataset.pipeline = val_pipeline
+
+# test_pipeline = _base_.test_pipeline
+# test_pipeline[0].ann_file=file_test
+# test_dataloader = _base_.test_dataloader
+# test_dataloader.dataset.ann_file = file_test
+# test_dataloader.dataset.pipeline = test_pipeline
+# # ==================== 
+
 
 # ============== MODEL ==============
 data_preprocessor = dict(test_cfg=dict(size_divisor=16))    # test_cfg into data_preprocessor provides 
                                                             # automatic padding required for predictions in mode 'whole'
 model = dict(
-    type='MultitaskEncoderDecoder',
     data_preprocessor=data_preprocessor,
-    # pretrained='/project/6075102/AI4arctic/m32patel/mmselfsup/work_dirs/selfsup/mae_vit-base-p16/epoch_200.pth',
-    # pretrained=None,
     backbone=dict(
         _delete_=True,
         type='AI4Arctic_UNet',
-        # pretrained='/home/m32patel/projects/def-dclausi/AI4arctic/m32patel/mmselfsup/work_dirs/selfsup/mae_vit-base-p16_cs512-amp-coslr-400e_ai4arctic_norm_pix/epoch_400.pth',
-        # pretrained='/project/6075102/AI4arctic/m32patel/mmselfsup/work_dirs/selfsup/mae_vit-base-p16/epoch_200.pth',
-        # init_cfg=dict(type='Pretrained', checkpoint=None, prefix = 'backbone.'),
         in_channels=len(_base_.channels),
-        # base_channels=32,
         layer_channels = [32, 64, 64, 64, 64],
         num_stages=5,
         strides=(1, 1, 1, 1, 1),
@@ -105,4 +120,3 @@ custom_imports = _base_.custom_imports
 custom_imports.imports.extend([
                                 'mmseg.models.backbones.ai4arctic_unet',
                                 ])
-

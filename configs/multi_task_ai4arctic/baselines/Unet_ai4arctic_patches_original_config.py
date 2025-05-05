@@ -116,7 +116,7 @@ concat_dataset = dict(type='ConcatDataset',
                                       ann_file = file_train,
                                       pipeline = train_pipeline) for i in downsample_factor_train])
 train_dataloader = dict(batch_size=16,
-                        num_workers=16,
+                        num_workers=8,
                         persistent_workers=True,
                         sampler=dict(type='WeightedInfiniteSampler', use_weights=True),
                         # sampler=dict(type='InfiniteSampler', shuffle=True),

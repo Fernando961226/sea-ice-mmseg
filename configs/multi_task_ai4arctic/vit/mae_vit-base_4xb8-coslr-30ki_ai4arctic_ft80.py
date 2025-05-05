@@ -39,7 +39,7 @@ file_test = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/data_split_set
 # # small data to test
 # data_root_test_nc = data_root_train_nc
 # file_val = '/home/jnoat92/projects/rrg-dclausi/ai4arctic/dataset/data_split_setup/t_1.txt'
-# file_train = file_val; file_test = file_val; 
+# file_train = file_val; file_test = file_val
 
 # load normalization params
 possible_channels = ['nersc_sar_primary', 'nersc_sar_secondary', 
@@ -77,18 +77,18 @@ channels = [
     # 'sar_grid_longitude',
     # 'distance_map',
 
-    # -- AMSR2 channels -- #
-    'btemp_6_9h', 'btemp_6_9v',
-    'btemp_7_3h', 'btemp_7_3v',
-    'btemp_10_7h', 'btemp_10_7v',
-    'btemp_18_7h', 'btemp_18_7v',
-    'btemp_23_8h', 'btemp_23_8v',
-    'btemp_36_5h', 'btemp_36_5v',
-    'btemp_89_0h', 'btemp_89_0v',
+    # # -- AMSR2 channels -- #
+    # 'btemp_6_9h', 'btemp_6_9v',
+    # 'btemp_7_3h', 'btemp_7_3v',
+    # 'btemp_10_7h', 'btemp_10_7v',
+    # 'btemp_18_7h', 'btemp_18_7v',
+    # 'btemp_23_8h', 'btemp_23_8v',
+    # 'btemp_36_5h', 'btemp_36_5v',
+    # 'btemp_89_0h', 'btemp_89_0v',
 
-    # # -- Environmental variables -- #
-    'u10m_rotated', 'v10m_rotated',
-    't2m', 'skt', 'tcwv', 'tclw',
+    # # # -- Environmental variables -- #
+    # 'u10m_rotated', 'v10m_rotated',
+    # 't2m', 'skt', 'tcwv', 'tclw',
 
     # # -- acquisition time
     # 'month', 'day'
@@ -116,7 +116,7 @@ concat_dataset = dict(type='ConcatDataset',
                                       data_root = os.path.join(data_root_patches, 'down_scale_%dX'%(i)),
                                       ann_file = file_train,
                                       pipeline = train_pipeline) for i in downsample_factor_train])
-train_dataloader = dict(batch_size=8,
+train_dataloader = dict(batch_size=16,
                         num_workers=8,
                         persistent_workers=True,
                         sampler=dict(type='WeightedInfiniteSampler', use_weights=True),
@@ -298,7 +298,7 @@ optim_wrapper = dict(
         }))
 
 # runtime settings
-n_iterations = 50000
+n_iterations = 30000
 val_interval = 1000
 train_cfg = dict(
     type='IterBasedTrainLoop', max_iters=n_iterations, val_interval=val_interval)
@@ -327,7 +327,7 @@ default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='AI4arcticLoggerHook', interval=val_interval//10, log_metric_by_epoch=False),
     param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', 
+    checkpoint=dict(type='AI4arcticCheckpointHook', 
                     # save_best="combined_score", 
                     save_best=["combined_score", "SIC.r2", "SOD.f1", "FLOE.f1"], 
                     rule="greater",
@@ -351,7 +351,7 @@ log_processor = dict(type='LogProcessor', log_with_hierarchy=True)  # log_with_h
 wandb_config = dict(type='WandbVisBackend',
                      init_kwargs=dict(
                          entity='jnoat92',
-                         project='Downstream-HH-HV-PM-EV',
+                         project='Downstream-HH-HV',
                          group="ft_{:03d}".format(int(file_train.split('.')[0].split('_')[-1])),
                          name='{{fileBasenameNoExtension}}',),
                      #  name='filename',),
@@ -377,8 +377,9 @@ custom_imports = dict(
              'mmseg.engine.hooks.ai4arctic_visualization_hook',
              'mmseg.engine.hooks.early_stopping_hook_main',
              'mmseg.engine.hooks.ai4arctic_runtime_hook',
-             'mmseg.engine.hooks.ai4arctic_logger_hook'],
+             'mmseg.engine.hooks.ai4arctic_logger_hook',
+             'mmseg.engine.hooks.ai4arctic_checkpoint_hook'],
     allow_failed_imports=False)
 
 # randomness
-randomness = dict(seed=0, diff_rank_seed=True)
+randomness = dict(seed=1, diff_rank_seed=True)

@@ -1,7 +1,10 @@
 '''
 No@
 '''
-_base_ = ['mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_ft100.py']
+_base_ = ['mae_vit-base_4xb8-amp-coslr-30ki_ai4arctic_sup100.py']
+
+# ============== DATASET ==============
+train_dataloader = dict(batch_size=8, num_workers=4)
 
 # Update backbone
 arch='h'
