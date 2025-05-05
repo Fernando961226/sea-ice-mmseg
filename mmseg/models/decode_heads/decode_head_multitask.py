@@ -1,4 +1,9 @@
-# Copyright (c) OpenMMLab. All rights reserved.
+'''
+No@
+May 5th, 2025
+This is a version of the decode_head.py that allows 
+choosing a loss function per task (multi-task training)
+'''
 import warnings
 from abc import ABCMeta, abstractmethod
 from typing import List, Tuple

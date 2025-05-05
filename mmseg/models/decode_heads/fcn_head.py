@@ -4,7 +4,11 @@ import torch.nn as nn
 from mmcv.cnn import ConvModule
 
 from mmseg.registry import MODELS
-from .decode_head_multitask import BaseDecodeHead
+# ======== No@  
+# This cusomized BaseDecodeHead allows using different
+# loss functions per task
+from .decode_head_multitask import BaseDecodeHead  
+# ============
 # from .decode_head import BaseDecodeHead
 
 

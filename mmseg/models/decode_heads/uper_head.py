@@ -5,7 +5,11 @@ from mmcv.cnn import ConvModule
 
 from mmseg.registry import MODELS
 from ..utils import resize
-from .decode_head_multitask import BaseDecodeHead
+# ======== No@  
+# This cusomized BaseDecodeHead allows using different
+# loss functions per task
+from .decode_head_multitask import BaseDecodeHead  
+# ============
 # from .decode_head import BaseDecodeHead
 from .psp_head import PPM
 
