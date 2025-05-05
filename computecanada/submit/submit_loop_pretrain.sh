@@ -2,28 +2,24 @@
 set -e
 selfsup_configs=( 
 # base
-# configs/selfsup/ai4arctic/pretrain_20/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt20.py
-# configs/selfsup/ai4arctic/pretrain_40/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt40.py
-# configs/selfsup/ai4arctic/pretrain_60/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt60.py
-# configs/selfsup/ai4arctic/pretrain_80/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80.py
+# configs/selfsup/ai4arctic/pretrain_20/mae_vit-base-p16_4xb8-amp-coslr-30ki_ai4arctic_pt20.py
+# configs/selfsup/ai4arctic/pretrain_40/mae_vit-base-p16_4xb8-amp-coslr-30ki_ai4arctic_pt40.py
+# configs/selfsup/ai4arctic/pretrain_60/mae_vit-base-p16_4xb8-amp-coslr-30ki_ai4arctic_pt60.py
+# # configs/selfsup/ai4arctic/pretrain_80/base/mae_vit-base-p16_4xb8-amp-coslr-30ki_ai4arctic_pt80.py
 
-# configs/selfsup/ai4arctic/pretrain_80/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80_mr70.py
-# configs/selfsup/ai4arctic/pretrain_80/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80_mr75.py
-# configs/selfsup/ai4arctic/pretrain_80/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80_mr80.py
-configs/selfsup/ai4arctic/pretrain_80/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80_mr85.py
-configs/selfsup/ai4arctic/pretrain_80/mae_vit-base-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80_mr90.py
+# # large
+# # configs/selfsup/ai4arctic/pretrain_20/mae_vit-large-p16_4xb8-amp-coslr-30ki_ai4arctic_pt20.py
+# # configs/selfsup/ai4arctic/pretrain_40/mae_vit-large-p16_4xb8-amp-coslr-30ki_ai4arctic_pt40.py
+# # configs/selfsup/ai4arctic/pretrain_60/mae_vit-large-p16_4xb8-amp-coslr-30ki_ai4arctic_pt60.py
+# # configs/selfsup/ai4arctic/pretrain_80/large/mae_vit-large-p16_4xb8-amp-coslr-30ki_ai4arctic_pt80.py
 
-# large
-# configs/selfsup/ai4arctic/pretrain_20/mae_vit-large-p16_4xb8-amp-coslr-50ki_ai4arctic_pt20.py
-# configs/selfsup/ai4arctic/pretrain_40/mae_vit-large-p16_4xb8-amp-coslr-50ki_ai4arctic_pt40.py
-# configs/selfsup/ai4arctic/pretrain_60/mae_vit-large-p16_4xb8-amp-coslr-50ki_ai4arctic_pt60.py
-# configs/selfsup/ai4arctic/pretrain_80/mae_vit-large-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80.py
 
 # # huge
-# configs/selfsup/ai4arctic/pretrain_20/mae_vit-huge-p16_4xb8-amp-coslr-50ki_ai4arctic_pt20.py
-# configs/selfsup/ai4arctic/pretrain_40/mae_vit-huge-p16_4xb8-amp-coslr-50ki_ai4arctic_pt40.py
-# configs/selfsup/ai4arctic/pretrain_60/mae_vit-huge-p16_4xb8-amp-coslr-50ki_ai4arctic_pt60.py
-# configs/selfsup/ai4arctic/pretrain_80/mae_vit-huge-p16_4xb8-amp-coslr-50ki_ai4arctic_pt80.py
+# # configs/selfsup/ai4arctic/pretrain_20/mae_vit-huge-p16_4xb8-amp-coslr-30ki_ai4arctic_pt20.py
+# configs/selfsup/ai4arctic/pretrain_40/mae_vit-huge-p16_4xb8-amp-coslr-30ki_ai4arctic_pt40.py
+# # configs/selfsup/ai4arctic/pretrain_60/mae_vit-huge-p16_4xb8-amp-coslr-30ki_ai4arctic_pt60.py
+# # configs/selfsup/ai4arctic/pretrain_80/huge/mae_vit-huge-p16_4xb8-amp-coslr-30ki_ai4arctic_pt80.py
+
 )
 
 for i in "${!selfsup_configs[@]}"; do
