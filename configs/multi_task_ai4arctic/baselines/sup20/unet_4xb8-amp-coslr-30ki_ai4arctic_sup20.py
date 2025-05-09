@@ -107,7 +107,7 @@ model = dict(
     auxiliary_head=None,
     # model training and testing settings
     train_cfg=dict(),
-    test_cfg=dict(mode='whole'))  # yapf: disable
+    test_cfg=dict(_delete_=True, mode='whole'))  # yapf: disable
     # test_cfg=dict(mode='slide', crop_size=crop_size, stride=(crop_size[0] *66//100, crop_size[1]*66//100)))
 
 
