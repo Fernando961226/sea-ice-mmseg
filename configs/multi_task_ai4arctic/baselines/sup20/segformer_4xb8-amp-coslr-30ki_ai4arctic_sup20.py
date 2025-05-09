@@ -4,8 +4,6 @@ _base_ = [
 
 # ============== MODEL ==============
 # Segformer_b2 --> /configs/segformer/segformer_mit-b2_8xb2-160k_ade20k-512x512.py
-data_preprocessor = dict(test_cfg=dict(size_divisor=32))    # test_cfg into data_preprocessor provides 
-                                                            # automatic padding required for predictions in mode 'whole'
 
 model = dict(
     backbone=dict(

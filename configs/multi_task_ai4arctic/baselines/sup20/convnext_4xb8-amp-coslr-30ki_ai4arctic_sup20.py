@@ -13,6 +13,7 @@ for i in range(len(decode_head)):
     decode_head[i]['channels'] = 512
 
 model = dict(
+    data_preprocessor=data_preprocessor,
     backbone=dict(
         _delete_=True,
         type='mmpretrain.ConvNeXt',
@@ -26,7 +27,7 @@ model = dict(
     decode_head = decode_head,
     # model training and testing settings
     train_cfg=dict(),
-    test_cfg=dict(mode='whole')
+    test_cfg=dict(_delete_=True, mode='whole')
     )
 
 

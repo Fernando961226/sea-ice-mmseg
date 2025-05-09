@@ -4,8 +4,6 @@ _base_ = [
 
 # ============== MODEL ==============
 # DeepLabv3p from --> configs/_base_/models/deeplabv3plus_r50-d8.py
-data_preprocessor = dict(test_cfg=dict(size_divisor=2))    # test_cfg into data_preprocessor provides 
-                                                            # automatic padding required for predictions in mode 'whole'
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 
 model = dict(
@@ -67,9 +65,6 @@ model = dict(
             loss_decode=dict(
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=3.0, avg_non_ignore=False)),
     ],
-    # model training and testing settings
-    train_cfg=dict(),
-    test_cfg=dict(mode='whole')
     )
 
 wandb_config = _base_.wandb_config
