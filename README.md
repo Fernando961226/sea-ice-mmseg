@@ -1,14 +1,22 @@
 # AI4arctic readme
 
+This repository builds on top of [mmsegmentation](https://github.com/open-mmlab/mmsegmentation.git). The mmsegmentation toolbox is particularly useful for quick semantic segmentation setup towards training and testing deep learning methods, as it includes implementations of many known architectures as well as the required pipeline to integrate data, models, and evaluation. The original repository is designed for general computer vision tasks and is not tailored for remote sensing or other specific types of data.
+
+This repository extends mmsegmentation to support remote sensing data for segmentation tasks. Specifically, for Arctic research, the repository includes a multi-task feature where the model is able to predict three segmentation maps instead of one. This involves creating a multi-task segmentor with three separate decoders, each dedicated to a specific segmentation task.
+
 ## Changes done to original mmsegmentation to get it working for ai4arctic
+
+### Dataset:
+- Added a new dataset classes :
+- `AI4Arctic`
+- files added/modified: <br>
+[mmseg/datasets/ai4arctic_patches.py](mmseg/datasets/ai4arctic_patches.py)
+[mmseg/datasets/transforms/loading_ai4arctic_patches.py](mmseg/datasets/transforms/loading_ai4arctic_patches.py)
+
 
 ## Template Configuration file:
 [configs/multi_task_ai4arctic/mae_ai4arctic_ds5_pt_80_ft_20.py](configs/multi_task_ai4arctic/mae_ai4arctic_ds5_pt_80_ft_20.py)
 
-### Dataset:
-- Added a new dataset class `AI4Arctic`
-- files added/modified: <br>
-[mmseg/datasets/ai4arctic.py](mmseg/datasets/ai4arctic.py)
 
 ### Pipelines/image loader:
 
