@@ -16,7 +16,7 @@ This repository extends mmsegmentation to support remote sensing data for segmen
 - Encoder-Decoder model to support SIC, SOD, and FLOE tasks: [mmseg/models/segmentors/mutitask_encoder_decoder.py](mmseg/models/segmentors/mutitask_encoder_decoder.py)
 - `BaseDecodeHead` to support multitask models: [mmseg/models/decode_heads/decode_head_multitask.py](mmseg/models/decode_heads/decode_head_multitask.py)
 
-##Regression target
+### Regression target
 - FCN head for regression: [FCNHead_regression](https://github.com/Fernando961226/sea-ice-mmseg/blob/e66a789fc8d7e5a320b39dccf748dd6965b668f4/mmseg/models/decode_heads/fcn_head.py#L104)
 - [Mse_loss](mmseg/models/losses/mse_loss.py)
 - UperNet head for regression: [UPerHead_regression](https://github.com/Fernando961226/sea-ice-mmseg/blob/e66a789fc8d7e5a320b39dccf748dd6965b668f4/mmseg/models/decode_heads/uper_head.py#L147C7-L147C26)
@@ -28,14 +28,14 @@ This repository extends mmsegmentation to support remote sensing data for segmen
 [mmseg/engine/hooks/ai4arctic_visualization_hook.py](mmseg/engine/hooks/ai4arctic_visualization_hook.py)
 [mmseg/engine/hooks/early_stopping_hook_main.py](mmseg/engine/hooks/early_stopping_hook_main.py)
 
-###Metrics
+### Metrics
 [mmseg/evaluation/metrics/multitask_ai4arctic_metric.py](mmseg/evaluation/metrics/multitask_ai4arctic_metric.py)
 [mmseg/evaluation/metrics/multitask_iou_metric.py](mmseg/evaluation/metrics/multitask_iou_metric.py)
 
-###New Backbones
+### New Backbones
 - From Ai4Arctic competition: [mmseg/models/backbones/ai4arctic_unet.py](mmseg/models/backbones/ai4arctic_unet.py)
 - [mmseg/models/backbones/custom_vit_bckbn.py](mmseg/models/backbones/custom_vit_bckbn.py)
 
-###Config
+### Config
 
-###Visualization
+### Visualization
