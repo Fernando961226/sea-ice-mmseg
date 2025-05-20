@@ -22,15 +22,15 @@ This repository extends mmsegmentation to support remote sensing data for segmen
 - UperNet head for regression: [UPerHead_regression](https://github.com/Fernando961226/sea-ice-mmseg/blob/e66a789fc8d7e5a320b39dccf748dd6965b668f4/mmseg/models/decode_heads/uper_head.py#L147C7-L147C26)
 
 ### Modified Hooks:
-[mmseg/engine/hooks/ai4arctic_checkpoint_hook.py](mmseg/engine/hooks/ai4arctic_checkpoint_hook.py)
-[mmseg/engine/hooks/ai4arctic_logger_hook.py](mmseg/engine/hooks/ai4arctic_logger_hook.py)
-[mmseg/engine/hooks/ai4arctic_runtime_hook.py](mmseg/engine/hooks/ai4arctic_runtime_hook.py)
-[mmseg/engine/hooks/ai4arctic_visualization_hook.py](mmseg/engine/hooks/ai4arctic_visualization_hook.py)
-[mmseg/engine/hooks/early_stopping_hook_main.py](mmseg/engine/hooks/early_stopping_hook_main.py)
+- [mmseg/engine/hooks/ai4arctic_checkpoint_hook.py](mmseg/engine/hooks/ai4arctic_checkpoint_hook.py)
+- [mmseg/engine/hooks/ai4arctic_logger_hook.py](mmseg/engine/hooks/ai4arctic_logger_hook.py)
+- [mmseg/engine/hooks/ai4arctic_runtime_hook.py](mmseg/engine/hooks/ai4arctic_runtime_hook.py)
+- [mmseg/engine/hooks/ai4arctic_visualization_hook.py](mmseg/engine/hooks/ai4arctic_visualization_hook.py)
+- [mmseg/engine/hooks/early_stopping_hook_main.py](mmseg/engine/hooks/early_stopping_hook_main.py)
 
 ### Metrics
-[mmseg/evaluation/metrics/multitask_ai4arctic_metric.py](mmseg/evaluation/metrics/multitask_ai4arctic_metric.py)
-[mmseg/evaluation/metrics/multitask_iou_metric.py](mmseg/evaluation/metrics/multitask_iou_metric.py)
+- [mmseg/evaluation/metrics/multitask_ai4arctic_metric.py](mmseg/evaluation/metrics/multitask_ai4arctic_metric.py)
+- [mmseg/evaluation/metrics/multitask_iou_metric.py](mmseg/evaluation/metrics/multitask_iou_metric.py)
 
 ### New Backbones
 - From Ai4Arctic competition: [mmseg/models/backbones/ai4arctic_unet.py](mmseg/models/backbones/ai4arctic_unet.py)
