@@ -14,7 +14,7 @@ This repository extends mmsegmentation to support remote sensing data for segmen
 
 ### Multi-task pipeline:
 - Encoder-Decoder model to support SIC, SOD, and FLOE tasks: [mmseg/models/segmentors/mutitask_encoder_decoder.py](mmseg/models/segmentors/mutitask_encoder_decoder.py)
-- BaseDecodeHead to support multitask models: [mmseg/models/decode_heads/decode_head_multitask.py](mmseg/models/decode_heads/decode_head_multitask.py)
+- `BaseDecodeHead` to support multitask models: [mmseg/models/decode_heads/decode_head_multitask.py](mmseg/models/decode_heads/decode_head_multitask.py)
 
 ##Regression target
 - FCN head for regression: [FCNHead_regression](https://github.com/Fernando961226/sea-ice-mmseg/blob/e66a789fc8d7e5a320b39dccf748dd6965b668f4/mmseg/models/decode_heads/fcn_head.py#L104)
