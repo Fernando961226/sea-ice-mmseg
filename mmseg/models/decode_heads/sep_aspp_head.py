@@ -100,3 +100,36 @@ class DepthwiseSeparableASPPHead(ASPPHead):
         output = self.sep_bottleneck(output)
         output = self.cls_seg(output)
         return output
+
+@MODELS.register_module()
+class DepthwiseSeparableASPPHead_regression(DepthwiseSeparableASPPHead):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.conv_seg = nn.Linear(self.channels, 1)
+        self.out_channels = 1
+
+    def forward(self, inputs):
+        """Forward function."""
+        x = self._transform_inputs(inputs)
+        aspp_outs = [
+            resize(
+                self.image_pool(x),
+                size=x.size()[2:],
+                mode='bilinear',
+                align_corners=self.align_corners)
+        ]
+        aspp_outs.extend(self.aspp_modules(x))
+        aspp_outs = torch.cat(aspp_outs, dim=1)
+        output = self.bottleneck(aspp_outs)
+        if self.c1_bottleneck is not None:
+            c1_output = self.c1_bottleneck(inputs[0])
+            output = resize(
+                input=output,
+                size=c1_output.shape[2:],
+                mode='bilinear',
+                align_corners=self.align_corners)
+            output = torch.cat([output, c1_output], dim=1)
+        output = self.sep_bottleneck(output)
+
+        output = self.cls_seg(output.permute((0, 2, 3, 1))).permute((0, 3, 1, 2))
+        return output

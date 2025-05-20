@@ -1,3 +1,6 @@
+"""
+No@
+"""
 import os.path as osp
 import warnings
 from typing import Optional, Sequence
@@ -59,7 +62,7 @@ class SegAI4ArcticVisualizationHook(Hook):
                  nan=255,
                  backend_args: Optional[dict] = None,
                  tasks=[''],
-                 combined_score_weights=[2, 2, 1]):
+                 combined_score_weights=[2/5, 2/5, 1/5]):
         self._visualizer: Visualizer = Visualizer.get_current_instance()
         self.downsample_factor = downsample_factor
         self.interval = interval
@@ -91,19 +94,19 @@ class SegAI4ArcticVisualizationHook(Hook):
                           'visualized or stored.')
         self._test_index = 0
 
-    def before_val(self, runner) -> None:
-        """All subclasses should override this method, if they need any
-        operations before validation.
+    # def before_val(self, runner) -> None:
+    #     """All subclasses should override this method, if they need any
+    #     operations before validation.
 
-        Args:
-            runner (Runner): The runner of the validation process.
-        """
-        self.GT_flat = {}
-        self.pred_flat = {}
+    #     Args:
+    #         runner (Runner): The runner of the validation process.
+    #     """
+    #     self.GT_flat = {}
+    #     self.pred_flat = {}
 
-        for task in self.tasks:
-            self.GT_flat[task] = torch.Tensor().to(self.device)
-            self.pred_flat[task] = torch.Tensor().to(self.device)
+    #     for task in self.tasks:
+    #         self.GT_flat[task] = torch.Tensor().to(self.device)
+    #         self.pred_flat[task] = torch.Tensor().to(self.device)
 
     def after_val_iter(self, runner: Runner, batch_idx: int, data_batch: dict,
                        outputs: Sequence[SegDataSample]) -> None:
@@ -130,13 +133,18 @@ class SegAI4ArcticVisualizationHook(Hook):
             scene_name = os.path.basename(img_path)
             scene_name = scene_name[17:32] + '_' + \
                 scene_name[77:80] + '_prep.nc'
-            if self.downsample_factor != 1:
+            
+            if self.downsample_factor is None:
+                downsample_factor = data_sample.dws_factor
+            else:
+                downsample_factor = self.downsample_factor
+            if downsample_factor > 1:
                 img = torch.from_numpy(img)
                 img = img.unsqueeze(0).permute(0, 3, 1, 2)
                 img = torch.nn.functional.interpolate(img,
-                                                      size=(shape[0] // self.downsample_factor,
-                                                            shape[1] // self.downsample_factor),
-                                                      mode='nearest')
+                                                      size=(int(shape[0]//2//(downsample_factor/2)),
+                                                            int(shape[1]//2//(downsample_factor/2))),
+                                                      mode='bilinear')
                 img = img.permute(0, 2, 3, 1).squeeze(0)
                 if self.pad_size is not None:
                     # Calculate the pad amounts
@@ -167,7 +175,7 @@ class SegAI4ArcticVisualizationHook(Hook):
             gt_sem_seg = {}
             for i, task in enumerate(tasks):
                 gt_sem_seg = data_sample.gt_sem_seg.data.cpu().numpy()[
-                    i, :, :].astype(np.float16)
+                    :, :, i].astype(np.float16)
                 gt_sem_seg[gt_sem_seg == 255] = np.nan
 
                 pred_sem_seg = data_sample.get(f'pred_sem_seg_{task}').data.cpu().numpy()[
@@ -194,11 +202,13 @@ class SegAI4ArcticVisualizationHook(Hook):
                 ax.set_title(f'Scene {scene_name}, {task}: Pred')
                 chart_cbar(
                     ax=ax, n_classes=self.num_classes[task], chart=task, cmap='jet')
+                
+                if task == 'SIC': land_mask = nan_mask
 
             # HH without land
             ax = axs[0]
             HH = img[:, :, 0].copy()
-            HH[nan_mask] = np.nan
+            HH[land_mask] = np.nan
             ax.imshow(HH, cmap='gray')
             ax.set_xticks([])
             ax.set_yticks([])
@@ -207,7 +217,7 @@ class SegAI4ArcticVisualizationHook(Hook):
             # HV without land
             ax = axs[1]
             HV = img[:, :, 1].copy()
-            HV[nan_mask] = np.nan
+            HV[land_mask] = np.nan
             ax.imshow(HV, cmap='gray')
             ax.set_xticks([])
             ax.set_yticks([])
@@ -219,72 +229,74 @@ class SegAI4ArcticVisualizationHook(Hook):
                         format='png', dpi=128, bbox_inches="tight")
             plt.close('all')
 
-            for i, task in enumerate(tasks):
-                gt_sem_seg = data_sample.gt_sem_seg.data.cpu().numpy()[
-                    i, :, :].astype(np.float16)
-                gt_sem_seg[gt_sem_seg == 255] = np.nan
-                pred_sem_seg = data_sample.get(f'pred_sem_seg_{task}').data.cpu().numpy()[
-                    0, :, :].astype(np.float16)
-                nan_mask = np.isnan(gt_sem_seg)
+            # for i, task in enumerate(tasks):
+            #     gt_sem_seg = data_sample.gt_sem_seg.data.cpu().numpy()[
+            #         :, :, i].astype(np.float16)
+            #     gt_sem_seg[gt_sem_seg == 255] = np.nan
+            #     pred_sem_seg = data_sample.get(f'pred_sem_seg_{task}').data.cpu().numpy()[
+            #         0, :, :].astype(np.float16)
+            #     nan_mask = np.isnan(gt_sem_seg)
 
-                self.GT_flat[task] = torch.cat((self.GT_flat[task], torch.tensor(
-                    gt_sem_seg[~nan_mask], device=self.device)))
-                self.pred_flat[task] = torch.cat((self.pred_flat[task], torch.tensor(
-                    pred_sem_seg[~nan_mask], device=self.device)))
+            #     self.GT_flat[task] = torch.cat((self.GT_flat[task], torch.tensor(
+            #         gt_sem_seg[~nan_mask], device=self.device)))
+            #     self.pred_flat[task] = torch.cat((self.pred_flat[task], torch.tensor(
+            #         pred_sem_seg[~nan_mask], device=self.device)))
 
-    @master_only
-    def after_val(self, runner) -> None:
-        """Calculate R2 score between flattened GT and flattend pred
+    # @master_only
+    # def after_val(self, runner) -> None:
+    #     """Calculate R2 score between flattened GT and flattend pred
 
-        Args:
-            runner (Runner): The runner of the testing process.
-        """
-        combined_score = 0
-        for i, task in enumerate(self.tasks):
-            if self.metrics[task] == 'r2':
-                r2 = r2_score(
-                    preds=self.pred_flat[task], target=self.GT_flat[task])
-                combined_score += self.combined_score_weights[i]*r2.item()
-                print(f'R2 score: [{task}]', r2.item())
-                runner.visualizer._vis_backends['WandbVisBackend']._commit = False
-                runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
-                    {f'val/R2 score [{task}]': r2.item()})
-                runner.visualizer._vis_backends['WandbVisBackend']._commit = True
-                # wandb.summary["R2 score"] = r2
-                # wandb.save()
-            elif self.metrics[task] == 'f1':
-                f1 = f1_score(target=self.GT_flat[task], preds=self.pred_flat[task],
-                              average='weighted', task='multiclass', num_classes=self.num_classes[task])
-                combined_score += self.combined_score_weights[i]*f1.item()
-                print(f'F1 score: [{task}]', f1.item())
-                runner.visualizer._vis_backends['WandbVisBackend']._commit = False
-                runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
-                    {f'val/F1 score [{task}]': f1.item()})
-                runner.visualizer._vis_backends['WandbVisBackend']._commit = True
-                # wandb.summary["F1 score"] = f1.item()
-                # wandb.save(runner.cfg.filename)
-            else:
-                raise "Unrecognized metric"
-        print(f'Combined score:', combined_score)
-        runner.visualizer._vis_backends['WandbVisBackend']._commit = False
-        runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
-            {f'val/Combined score': combined_score})
-        runner.visualizer._vis_backends['WandbVisBackend']._commit = True
+    #     Args:
+    #         runner (Runner): The runner of the testing process.
+    #     """
+    #     combined_score = 0
+    #     for i, task in enumerate(self.tasks):
+    #         if self.metrics[task] == 'r2':
+    #             r2 = r2_score(
+    #                 preds=self.pred_flat[task], target=self.GT_flat[task])
+    #             combined_score += self.combined_score_weights[i]*r2.item()
+    #             print(f'R2 score: [{task}]', r2.item())
+    #             runner.visualizer._vis_backends['WandbVisBackend']._commit = False
+    #             runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
+    #                 {f'val/R2 score [{task}]': r2.item()})
+    #             runner.visualizer._vis_backends['WandbVisBackend']._commit = True
+    #             # wandb.summary["R2 score"] = r2
+    #             # wandb.save()
+    #         elif self.metrics[task] == 'f1':
+    #             f1 = f1_score(target=self.GT_flat[task], preds=self.pred_flat[task],
+    #                           average='weighted', task='multiclass', num_classes=self.num_classes[task])
+    #             combined_score += self.combined_score_weights[i]*f1.item()
+    #             print(f'F1 score: [{task}]', f1.item())
+    #             runner.visualizer._vis_backends['WandbVisBackend']._commit = False
+    #             runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
+    #                 {f'val/F1 score [{task}]': f1.item()})
+    #             runner.visualizer._vis_backends['WandbVisBackend']._commit = True
+    #             # wandb.summary["F1 score"] = f1.item()
+    #             # wandb.save(runner.cfg.filename)
+    #         else:
+    #             raise "Unrecognized metric"
+    #     print(f'Combined score:', combined_score)
+    #     runner.visualizer._vis_backends['WandbVisBackend']._commit = False
+    #     runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
+    #         {f'val/Combined score': combined_score})
+    #     runner.visualizer._vis_backends['WandbVisBackend']._commit = True
 
-    def before_test(self, runner) -> None:
-        """All subclasses should override this method, if they need any
-        operations before testing.
+    #     del self.pred_flat, self.GT_flat
 
-        Args:
-            runner (Runner): The runner of the testing process.
-        """
+    # def before_test(self, runner) -> None:
+    #     """All subclasses should override this method, if they need any
+    #     operations before testing.
 
-        self.GT_flat = {}
-        self.pred_flat = {}
+    #     Args:
+    #         runner (Runner): The runner of the testing process.
+    #     """
 
-        for task in self.tasks:
-            self.GT_flat[task] = torch.Tensor().to(self.device)
-            self.pred_flat[task] = torch.Tensor().to(self.device)
+    #     self.GT_flat = {}
+    #     self.pred_flat = {}
+
+    #     for task in self.tasks:
+    #         self.GT_flat[task] = torch.Tensor().to(self.device)
+    #         self.pred_flat[task] = torch.Tensor().to(self.device)
 
     def after_test_iter(self, runner: Runner, batch_idx: int, data_batch: dict,
                         outputs: Sequence[SegDataSample]) -> None:
@@ -313,13 +325,18 @@ class SegAI4ArcticVisualizationHook(Hook):
             scene_name = os.path.basename(img_path)
             scene_name = scene_name[17:32] + '_' + \
                 scene_name[77:80] + '_prep.nc'
-            if self.downsample_factor != 1:
+            
+            if self.downsample_factor is None:
+                downsample_factor = data_sample.dws_factor
+            else:
+                downsample_factor = self.downsample_factor
+            if downsample_factor > 1:
                 img = torch.from_numpy(img)
                 img = img.unsqueeze(0).permute(0, 3, 1, 2)
                 img = torch.nn.functional.interpolate(img,
-                                                      size=(shape[0] // self.downsample_factor,
-                                                            shape[1] // self.downsample_factor),
-                                                      mode='nearest')
+                                                      size=(int(shape[0]//2//(downsample_factor/2)),
+                                                            int(shape[1]//2//(downsample_factor/2))),
+                                                      mode='bilinear')
                 img = img.permute(0, 2, 3, 1).squeeze(0)
                 if self.pad_size is not None:
                     # Calculate the pad amounts
@@ -350,7 +367,7 @@ class SegAI4ArcticVisualizationHook(Hook):
             gt_sem_seg = {}
             for i, task in enumerate(tasks):
                 gt_sem_seg = data_sample.gt_sem_seg.data.cpu().numpy()[
-                    i, :, :].astype(np.float16)
+                    :, :, i].astype(np.float16)
                 gt_sem_seg[gt_sem_seg == 255] = np.nan
 
                 pred_sem_seg = data_sample.get(f'pred_sem_seg_{task}').data.cpu().numpy()[
@@ -377,11 +394,13 @@ class SegAI4ArcticVisualizationHook(Hook):
                 ax.set_title(f'Scene {scene_name}, {task}: Pred')
                 chart_cbar(
                     ax=ax, n_classes=self.num_classes[task], chart=task, cmap='jet')
+                
+                if task == 'SIC': land_mask = nan_mask
 
             # HH without land
             ax = axs[0]
             HH = img[:, :, 0].copy()
-            HH[nan_mask] = np.nan
+            HH[land_mask] = np.nan
             ax.imshow(HH, cmap='gray')
             ax.set_xticks([])
             ax.set_yticks([])
@@ -390,7 +409,7 @@ class SegAI4ArcticVisualizationHook(Hook):
             # HV without land
             ax = axs[1]
             HV = img[:, :, 1].copy()
-            HV[nan_mask] = np.nan
+            HV[land_mask] = np.nan
             ax.imshow(HV, cmap='gray')
             ax.set_xticks([])
             ax.set_yticks([])
@@ -402,54 +421,56 @@ class SegAI4ArcticVisualizationHook(Hook):
                         format='png', dpi=128, bbox_inches="tight")
             plt.close('all')
 
-            for i, task in enumerate(tasks):
-                gt_sem_seg = data_sample.gt_sem_seg.data.cpu().numpy()[
-                    i, :, :].astype(np.float16)
-                gt_sem_seg[gt_sem_seg == 255] = np.nan
-                pred_sem_seg = data_sample.get(f'pred_sem_seg_{task}').data.cpu().numpy()[
-                    0, :, :].astype(np.float16)
-                nan_mask = np.isnan(gt_sem_seg)
+            # for i, task in enumerate(tasks):
+            #     gt_sem_seg = data_sample.gt_sem_seg.data.cpu().numpy()[
+            #         :, :, i].astype(np.float16)
+            #     gt_sem_seg[gt_sem_seg == 255] = np.nan
+            #     pred_sem_seg = data_sample.get(f'pred_sem_seg_{task}').data.cpu().numpy()[
+            #         0, :, :].astype(np.float16)
+            #     nan_mask = np.isnan(gt_sem_seg)
 
-                self.GT_flat[task] = torch.cat((self.GT_flat[task], torch.tensor(
-                    gt_sem_seg[~nan_mask], device=self.device)))
-                self.pred_flat[task] = torch.cat((self.pred_flat[task], torch.tensor(
-                    pred_sem_seg[~nan_mask], device=self.device)))
+            #     self.GT_flat[task] = torch.cat((self.GT_flat[task], torch.tensor(
+            #         gt_sem_seg[~nan_mask], device=self.device)))
+            #     self.pred_flat[task] = torch.cat((self.pred_flat[task], torch.tensor(
+            #         pred_sem_seg[~nan_mask], device=self.device)))
 
-    @master_only
-    def after_test(self, runner) -> None:
-        """Calculate R2 score between flattened GT and flattend pred
+    # @master_only
+    # def after_test(self, runner) -> None:
+    #     """Calculate R2 score between flattened GT and flattend pred
 
-        Args:
-            runner (Runner): The runner of the testing process.
-        """
-        combined_score = 0
-        for i, task in enumerate(self.tasks):
-            if self.metrics[task] == 'r2':
-                r2 = r2_score(
-                    preds=self.pred_flat[task], target=self.GT_flat[task])
-                combined_score += self.combined_score_weights[i]*r2.item()
-                print(f'R2 score: [{task}]', r2.item())
-                runner.visualizer._vis_backends['WandbVisBackend']._commit = False
-                runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
-                    {f'test/R2 score [{task}]': r2.item()})
-                runner.visualizer._vis_backends['WandbVisBackend']._commit = True
-                # wandb.summary["R2 score"] = r2
-                # wandb.save()
-            elif self.metrics[task] == 'f1':
-                f1 = f1_score(target=self.GT_flat[task], preds=self.pred_flat[task],
-                              average='weighted', task='multiclass', num_classes=self.num_classes[task])
-                combined_score += self.combined_score_weights[i]*f1.item()
-                print(f'F1 score: [{task}]', f1.item())
-                runner.visualizer._vis_backends['WandbVisBackend']._commit = False
-                runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
-                    {f'test/F1 score [{task}]': f1.item()})
-                runner.visualizer._vis_backends['WandbVisBackend']._commit = True
-                # wandb.summary["F1 score"] = f1.item()
-                # wandb.save(runner.cfg.filename)
-            else:
-                raise "Unrecognized metric"
-        print(f'Combined score:', combined_score)
-        runner.visualizer._vis_backends['WandbVisBackend']._commit = False
-        runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
-            {f'test/Combined score': combined_score})
-        runner.visualizer._vis_backends['WandbVisBackend']._commit = True
+    #     Args:
+    #         runner (Runner): The runner of the testing process.
+    #     """
+    #     combined_score = 0
+    #     for i, task in enumerate(self.tasks):
+    #         if self.metrics[task] == 'r2':
+    #             r2 = r2_score(
+    #                 preds=self.pred_flat[task], target=self.GT_flat[task])
+    #             combined_score += self.combined_score_weights[i]*r2.item()
+    #             print(f'R2 score: [{task}]', r2.item())
+    #             runner.visualizer._vis_backends['WandbVisBackend']._commit = False
+    #             runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
+    #                 {f'test/R2 score [{task}]': r2.item()})
+    #             runner.visualizer._vis_backends['WandbVisBackend']._commit = True
+    #             # wandb.summary["R2 score"] = r2
+    #             # wandb.save()
+    #         elif self.metrics[task] == 'f1':
+    #             f1 = f1_score(target=self.GT_flat[task], preds=self.pred_flat[task],
+    #                           average='weighted', task='multiclass', num_classes=self.num_classes[task]-1)
+    #             combined_score += self.combined_score_weights[i]*f1.item()
+    #             print(f'F1 score: [{task}]', f1.item())
+    #             runner.visualizer._vis_backends['WandbVisBackend']._commit = False
+    #             runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
+    #                 {f'test/F1 score [{task}]': f1.item()})
+    #             runner.visualizer._vis_backends['WandbVisBackend']._commit = True
+    #             # wandb.summary["F1 score"] = f1.item()
+    #             # wandb.save(runner.cfg.filename)
+    #         else:
+    #             raise "Unrecognized metric"
+    #     print(f'Combined score:', combined_score)
+    #     runner.visualizer._vis_backends['WandbVisBackend']._commit = False
+    #     runner.visualizer._vis_backends['WandbVisBackend']._wandb.log(
+    #         {f'test/Combined score': combined_score})
+    #     runner.visualizer._vis_backends['WandbVisBackend']._commit = True
+
+    #     del self.pred_flat, self.GT_flat

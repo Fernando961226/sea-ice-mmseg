@@ -2,6 +2,7 @@
 import logging
 from typing import List, Optional
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmengine.logging import print_log
@@ -24,6 +25,7 @@ from mmengine.structures import PixelData
 from mmseg.utils import ConfigType, OptConfigType, OptMultiConfig, OptSampleList, SampleList, add_prefix
 import logging
 from mmengine.logging import print_log
+from ..losses.mse_loss import MSELossWithIgnoreIndex
 
 @MODELS.register_module()
 class MultitaskEncoderDecoder(BaseSegmentor):
@@ -267,6 +269,7 @@ class MultitaskEncoderDecoder(BaseSegmentor):
         seg_pred = {task: seg_logit.argmax(dim=1) for task, seg_logit in seg_logits.items()}
         seg_pred = {task: list(pred) for task, pred in seg_pred.items()}
         return seg_pred
+    
     def postprocess_result(self,
                            seg_logits: Tensor,
                            task,
@@ -328,7 +331,11 @@ class MultitaskEncoderDecoder(BaseSegmentor):
             else:
                 i_seg_logits = seg_logits[i]
 
-            if C > 1:
+            if isinstance(self.decode_heads[task].loss_decode, MSELossWithIgnoreIndex):
+                i_seg_pred = torch.round(i_seg_logits.squeeze())
+                i_seg_pred = torch.clamp(i_seg_pred, min=0, 
+                                         max=self.decode_heads[task].num_classes-1)
+            elif C > 1:
                 i_seg_pred = i_seg_logits.argmax(dim=0, keepdim=True)
             else:
                 i_seg_logits = i_seg_logits.sigmoid()

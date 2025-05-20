@@ -100,7 +100,7 @@ class MultitaskIoUMetric(BaseMetric):
                     num_classes = len(self.dataset_meta[f'{task}_classes'])
                     self.results[task].append(
                         self.intersect_and_union(
-                            pred_label, label[task_index, :, :], num_classes, self.ignore_index)
+                            pred_label, label[:, :, task_index], num_classes, self.ignore_index)
                     )
                 # format_result
                 if self.output_dir is not None:

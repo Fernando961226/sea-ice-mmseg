@@ -5,7 +5,12 @@ from mmcv.cnn import ConvModule
 
 from mmseg.registry import MODELS
 from ..utils import resize
-from .decode_head import BaseDecodeHead
+# ======== No@  
+# This cusomized BaseDecodeHead allows using different
+# loss functions per task
+from .decode_head_multitask import BaseDecodeHead  
+# ============
+# from .decode_head import BaseDecodeHead
 from .psp_head import PPM
 
 
@@ -136,4 +141,17 @@ class UPerHead(BaseDecodeHead):
         """Forward function."""
         output = self._forward_feature(inputs)
         output = self.cls_seg(output)
+        return output
+
+@MODELS.register_module()
+class UPerHead_regression(UPerHead):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.conv_seg = nn.Linear(self.channels, 1)
+        self.out_channels = 1
+
+    def forward(self, inputs):
+        """Forward function."""
+        output = self._forward_feature(inputs)
+        output = self.cls_seg(output.permute((0, 2, 3, 1))).permute((0, 3, 1, 2))
         return output
