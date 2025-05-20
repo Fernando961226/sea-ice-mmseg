@@ -18,7 +18,7 @@ This repository extends mmsegmentation to support remote sensing data for segmen
 
 ##Regression target
 - FCN head for regression: [FCNHead_regression](https://github.com/Fernando961226/sea-ice-mmseg/blob/e66a789fc8d7e5a320b39dccf748dd6965b668f4/mmseg/models/decode_heads/fcn_head.py#L104)
-- [mmseg/models/losses/mse_loss.py](mmseg/models/losses/mse_loss.py)
+- [Mse_loss](mmseg/models/losses/mse_loss.py)
 - UperNet head for regression: [UPerHead_regression](https://github.com/Fernando961226/sea-ice-mmseg/blob/e66a789fc8d7e5a320b39dccf748dd6965b668f4/mmseg/models/decode_heads/uper_head.py#L147C7-L147C26)
 
 ### Modified Hooks:
