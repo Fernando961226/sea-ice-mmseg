@@ -6,9 +6,9 @@ This repository extends mmsegmentation to support remote sensing data for segmen
 
 ## Changes done to original mmsegmentation to get it working for ai4arctic
 
-### Dataset:
-- Added a new dataset classes :
-- `AI4Arctic`
+### New Datasets:
+- `AI4Arctic`: Prepared to load all training images (downsampled) in the RAM.
+- `AI4ArcticPatches`: Prepared to operate with pre-computed patches.
 - files added/modified: <br>
 [mmseg/datasets/ai4arctic_patches.py](mmseg/datasets/ai4arctic_patches.py)
 [mmseg/datasets/transforms/loading_ai4arctic_patches.py](mmseg/datasets/transforms/loading_ai4arctic_patches.py)
