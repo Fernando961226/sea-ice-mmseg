@@ -10,8 +10,7 @@ This repository extends mmsegmentation to support remote sensing data for segmen
 - `AI4Arctic`: Prepared to load all training images (downsampled) in the RAM.
 - `AI4ArcticPatches`: Prepared to operate with pre-computed patches.
 - files added/modified: <br>
-[mmseg/datasets/ai4arctic_patches.py](mmseg/datasets/ai4arctic_patches.py)
-[mmseg/datasets/transforms/loading_ai4arctic_patches.py](mmseg/datasets/transforms/loading_ai4arctic_patches.py)
+[mmseg/datasets/ai4arctic_patches.py](mmseg/datasets/ai4arctic_patches.py), [mmseg/datasets/transforms/loading_ai4arctic_patches.py](mmseg/datasets/transforms/loading_ai4arctic_patches.py)
 
 ### Multi-task pipeline:
 - Encoder-Decoder model to support SIC, SOD, and FLOE tasks: [mmseg/models/segmentors/mutitask_encoder_decoder.py](mmseg/models/segmentors/mutitask_encoder_decoder.py)
