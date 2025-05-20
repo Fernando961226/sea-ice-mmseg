@@ -1,4 +1,9 @@
-# Copyright (c) OpenMMLab. All rights reserved.
+"""
+No@
+January 2025
+
+This hook customizes the information to be logged
+"""
 from typing import Any, Dict, Optional, Union
 
 import numpy as np

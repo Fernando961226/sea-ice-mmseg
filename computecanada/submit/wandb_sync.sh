@@ -1,7 +1,7 @@
 set -e
 
 
-mapfile -t array < <(find /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs/03_Data_split_variation -type d -name "vis_data")
+mapfile -t array < <(find /home/jnoat92/projects/rrg-dclausi/ai4arctic/sea-ice-mmseg/work_dirs/resnet50_4xb8-amp-coslr-30ki_ai4arctic_sup100 -type d -name "vis_data")
 
 module purge
 module load  StdEnv/2020 python/3.10.2

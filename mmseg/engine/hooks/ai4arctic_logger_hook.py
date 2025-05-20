@@ -1,4 +1,6 @@
-# Copyright (c) OpenMMLab. All rights reserved.
+"""
+No@
+"""
 import os.path as osp
 from typing import Dict, Optional
 

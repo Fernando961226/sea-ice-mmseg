@@ -1,4 +1,6 @@
-# Copyright (c) OpenMMLab. All rights reserved.
+"""
+No@
+"""
 import logging
 import os.path as osp
 from collections import OrderedDict

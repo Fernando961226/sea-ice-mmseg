@@ -3,25 +3,16 @@ No@
 '''
 from mmseg.registry import DATASETS
 from .basesegdataset import BaseSegDataset
-from typing import Callable, Dict, List, Optional, Sequence, Union
+from typing import List
 import os.path as osp
 
 import mmengine
 import mmengine.fileio as fileio
-import numpy as np
-from mmengine.dataset import BaseDataset, Compose
 
 
 @DATASETS.register_module()
 class AI4ArcticPatches(BaseSegDataset):
-    """COCO-Stuff dataset.
-
-    In segmentation map annotation for COCO-Stuff, Train-IDs of the 10k version
-    are from 1 to 171, where 0 is the ignore index, and Train-ID of COCO Stuff
-    164k is from 0 to 170, where 255 is the ignore index. So, they are all 171
-    semantic categories. ``reduce_zero_label`` is set to True and False for the
-    10k and 164k versions, respectively. The ``img_suffix`` is fixed to '.jpg',
-    and ``seg_map_suffix`` is fixed to '.png'.
+    """
     """
     METAINFO = dict(
         {'SIC_classes': ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
@@ -112,14 +103,7 @@ class AI4ArcticPatches(BaseSegDataset):
 
 @DATASETS.register_module()
 class AI4Arctic(BaseSegDataset):
-    """COCO-Stuff dataset.
-
-    In segmentation map annotation for COCO-Stuff, Train-IDs of the 10k version
-    are from 1 to 171, where 0 is the ignore index, and Train-ID of COCO Stuff
-    164k is from 0 to 170, where 255 is the ignore index. So, they are all 171
-    semantic categories. ``reduce_zero_label`` is set to True and False for the
-    10k and 164k versions, respectively. The ``img_suffix`` is fixed to '.jpg',
-    and ``seg_map_suffix`` is fixed to '.png'.
+    """
     """
     METAINFO = dict(
         {'SIC_classes': ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
