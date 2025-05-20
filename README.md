@@ -40,7 +40,7 @@ This repository extends mmsegmentation to support remote sensing data for segmen
 Config files to run experiments are located at [configs/multi_task_ai4arctic/](configs/multi_task_ai4arctic/)
 
 ## How to use:
-1. Follow steps on [create_env.sh](computecanada/submit/create_env.sh) to create python environment. Installation steps on file create_env.sh work properlly in Compute Canada. In other platforms package conflicts may appear.
+1. Follow steps on [create_env.sh](computecanada/submit/create_env.sh) to create python environment. Installation steps on file create_env.sh work properly in Compute Canada. In other platforms package conflicts may appear.
 2. [extract_patches.sh](computecanada/submit/extract_patches.sh) precompute patches and save them in the scratch folder (select the desired downsampling ratio).
 3. [submit_loop_from_scratch.sh](computecanada/submit/submit_loop_from_scratch.sh) shows how to iterate over different config files to train models from scratch.
 4. [submit_loop_pretrain.sh](computecanada/submit/submit_loop_pretrain.sh) shows how to iterate over different config files to train self-supervised models on [sea-ice-mmselfsup](https://github.com/jnoat92/sea-ice-mmselfsup.git)
