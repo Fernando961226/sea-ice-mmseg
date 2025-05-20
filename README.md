@@ -32,7 +32,7 @@ This repository extends mmsegmentation to support remote sensing data for segmen
 - [mmseg/evaluation/metrics/multitask_ai4arctic_metric.py](mmseg/evaluation/metrics/multitask_ai4arctic_metric.py)
 - [mmseg/evaluation/metrics/multitask_iou_metric.py](mmseg/evaluation/metrics/multitask_iou_metric.py)
 
-### New Backbones
+### Backbones
 - From Ai4Arctic competition: [mmseg/models/backbones/ai4arctic_unet.py](mmseg/models/backbones/ai4arctic_unet.py)
 - [mmseg/models/backbones/custom_vit_bckbn.py](mmseg/models/backbones/custom_vit_bckbn.py)
 
